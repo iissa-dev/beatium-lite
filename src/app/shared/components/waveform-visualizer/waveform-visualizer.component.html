@@ -1,0 +1,78 @@
+<div class="w-full flex flex-col gap-3 font-['Inter',sans-serif]">
+
+  <!-- Canvas Header Bar with Labels and Calibration Reference -->
+  <div class="flex items-center justify-between text-[11px] text-zinc-400">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full"
+        [class.bg-emerald-400]="isActive()"
+        [class.animate-pulse]="isActive()"
+        [class.bg-zinc-600]="!isActive()"
+      ></span>
+      <span class="font-semibold text-white tracking-wide">{{ label() }}</span>
+    </div>
+
+    <!-- Live Status Pill & Voltage Range -->
+    <div class="flex items-center gap-3 font-mono text-[10px]">
+      <span class="text-zinc-500">Amplitude Range: [-1.0 .. +1.0]</span>
+      <span
+        class="px-2 py-0.5 rounded-full border text-[10px] font-semibold"
+        [class.bg-emerald-500/15]="isActive()"
+        [class.border-emerald-500/30]="isActive()"
+        [class.text-emerald-300]="isActive()"
+        [class.bg-zinc-800]="!isActive()"
+        [class.border-white/10]="!isActive()"
+        [class.text-zinc-400]="!isActive()"
+      >
+        {{ isActive() ? 'STREAM ACTIVE' : 'IDLE / OFF' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Oscilloscope Canvas Box -->
+  <div class="relative w-full rounded-xl overflow-hidden border border-white/10 bg-[#09090b] shadow-inner" [style.height.px]="height()">
+    <canvas #visualizerCanvas class="w-full h-full block" width="700" [height]="height()"></canvas>
+
+    <!-- Calibration Axis Markings -->
+    @if (showGrid()) {
+      <div class="absolute top-1.5 left-2 text-[9px] font-mono text-zinc-600 select-none pointer-events-none">+1.0</div>
+      <div class="absolute top-1/2 -translate-y-1/2 left-2 text-[9px] font-mono text-zinc-500 select-none pointer-events-none">0.0V</div>
+      <div class="absolute bottom-1.5 left-2 text-[9px] font-mono text-zinc-600 select-none pointer-events-none">-1.0</div>
+    }
+  </div>
+
+  <!-- 8 PCM Samples Inspector (One clean row below oscilloscope) -->
+  <div class="glass-card rounded-xl p-3 border border-white/5 flex flex-col gap-2">
+    <div class="flex items-center justify-between text-[11px]">
+      <span class="text-zinc-300 font-medium">
+        Live Quantized PCM Buffer (Float32Array[0..7]):
+      </span>
+      <span class="text-zinc-500 font-mono text-[10px]">
+        32-bit Floating Point Audio
+      </span>
+    </div>
+
+    <!-- 8 Floating-point Value Chips -->
+    <div class="grid grid-cols-4 sm:grid-cols-8 gap-1.5 font-mono text-[10px]">
+      @for (sample of firstSamples(); track $index) {
+        <div
+          class="flex flex-col items-center justify-center py-1 px-1 rounded-lg border transition-all duration-150"
+          [class.bg-emerald-500/10]="sample > 0.05"
+          [class.border-emerald-500/30]="sample > 0.05"
+          [class.text-emerald-300]="sample > 0.05"
+          [class.bg-cyan-500/10]="sample < -0.05"
+          [class.border-cyan-500/30]="sample < -0.05"
+          [class.text-cyan-300]="sample < -0.05"
+          [class.bg-white/5]="sample >= -0.05 && sample <= 0.05"
+          [class.border-white/5]="sample >= -0.05 && sample <= 0.05"
+          [class.text-zinc-400]="sample >= -0.05 && sample <= 0.05"
+        >
+          <span class="text-[8px] text-zinc-500">#{{ $index }}</span>
+          <span class="font-bold">
+            {{ (sample >= 0 ? '+' : '') + sample.toFixed(3) }}
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>

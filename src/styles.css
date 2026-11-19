@@ -1,3 +1,408 @@
+@charset "UTF-8";
 /* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+@theme {
+    /* Fonts */
+    --font-headline: 'Plus Jakarta Sans', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-label: 'Inter', sans-serif;
+    --font-caveat: 'Caveat', cursive;
+
+    /* PlaySync Obsidian Core Theme Colors */
+    --color-playsync-bg: #09090b;
+    --color-playsync-surface: #141416;
+    --color-playsync-card: rgba(24, 24, 27, 0.7);
+    --color-playsync-card-hover: rgba(39, 39, 42, 0.85);
+    --color-playsync-border: rgba(255, 255, 255, 0.08);
+
+    /* Typography Colors */
+    --color-playsync-text: #ffffff;
+    --color-playsync-muted: #a1a1aa;
+
+    /* Brand / Action Accents (Tertiary Mint & White) */
+    --color-playsync-brand: #34d399;
+    --color-playsync-brand-hover: #10b981;
+    --color-playsync-brand-glow: rgba(52, 211, 153, 0.15);
+    --color-playsync-active-bg: rgba(52, 211, 153, 0.12);
+    --color-playsync-active-border: rgba(52, 211, 153, 0.35);
+
+    /* Action Buttons */
+    --color-playsync-btn-primary: #ffffff;
+    --color-playsync-btn-primary-text: #09090b;
+    --color-playsync-btn-secondary: #27272a;
+
+    /* Status Colors */
+    --color-playsync-success: #34d399;
+    --color-playsync-warning: #f59e0b;
+    --color-playsync-danger: #f87171;
+
+    /* PlaySync Neutral Glassmorphism System */
+    --color-playsync-glass-bg: #09090b;
+    --color-playsync-glass-surface: #111115;
+    --color-playsync-glass-card: #18181b;
+    --color-playsync-glass-elevated: #202025;
+    --color-playsync-glass-track-from: #18181b;
+    --color-playsync-glass-track-via: #121215;
+    --color-playsync-glass-track-to: #0b0b0d;
+
+    /* Glass Theme Shortcuts */
+    --color-glass-bg: #09090b;
+    --color-glass-surface: #111115;
+    --color-glass-card: #18181b;
+    --color-glass-elevated: #202025;
+    --color-glass-from: #18181b;
+    --color-glass-via: #121215;
+    --color-glass-to: #0b0b0d;
+}
+
+:root {
+    /* Fonts */
+    --font-headline: 'Plus Jakarta Sans', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-label: 'Inter', sans-serif;
+
+    /* PlaySync Obsidian Core Theme */
+    --color-playsync-bg: #09090b;
+    --color-playsync-surface: #141416;
+    --color-playsync-card: rgba(24, 24, 27, 0.7);
+    --color-playsync-card-hover: rgba(39, 39, 42, 0.85);
+    --color-playsync-border: rgba(255, 255, 255, 0.08);
+
+    /* Typography Colors */
+    --color-playsync-text: #ffffff;
+    --color-playsync-muted: #a1a1aa;
+
+    /* Brand / Action Accents (Tertiary Mint & White) */
+    --color-playsync-brand: #34d399;
+    --color-playsync-brand-hover: #10b981;
+    --color-playsync-brand-glow: rgba(52, 211, 153, 0.15);
+    --color-playsync-active-bg: rgba(52, 211, 153, 0.12);
+    --color-playsync-active-border: rgba(52, 211, 153, 0.35);
+
+    /* Action Buttons */
+    --color-playsync-btn-primary: #ffffff;
+    --color-playsync-btn-primary-text: #09090b;
+    --color-playsync-btn-secondary: #27272a;
+
+    /* Status Colors */
+    --color-playsync-success: #34d399;
+    --color-playsync-warning: #f59e0b;
+    --color-playsync-danger: #f87171;
+
+    /* PlaySync Neutral Glassmorphism System (No Green Tint) */
+    --color-playsync-glass-bg: #09090b;
+    --color-playsync-glass-surface: #111115;
+    --color-playsync-glass-card: #18181b;
+    --color-playsync-glass-elevated: #202025;
+    --color-playsync-glass-track-from: #18181b;
+    --color-playsync-glass-track-via: #121215;
+    --color-playsync-glass-track-to: #0b0b0d;
+
+    /* Glass Theme Shortcuts */
+    --color-glass-bg: #09090b;
+    --color-glass-surface: #111115;
+    --color-glass-card: #18181b;
+    --color-glass-elevated: #202025;
+    --color-glass-from: #18181b;
+    --color-glass-via: #121215;
+    --color-glass-to: #0b0b0d;
+
+    /* Glass Shadow */
+    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--color-playsync-active-border);
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-playsync-brand);
+}
+
+::-webkit-scrollbar-track {
+    background-color: var(--color-playsync-bg);
+}
+
+/* Base Document Styles - Obsidian Background with Mint Glow Accent */
+body {
+    background-color: #09090b;
+    background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(52, 211, 153, 0.08), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 50% 100%, rgba(52, 211, 153, 0.03), transparent 60%);
+    background-attachment: fixed;
+    color: var(--color-playsync-text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-headline);
+}
+
+.nav-loading-bar {
+    width: 100%;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(52, 211, 153, 0.4) 20%,
+            var(--color-playsync-brand, #34d399) 50%,
+            var(--color-playsync-brand-hover, #10b981) 75%,
+            transparent 100%);
+    box-shadow:
+        0 0 10px rgba(52, 211, 153, 0.8),
+        0 0 4px rgba(52, 211, 153, 0.9);
+    animation: navLoadingSlide 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes navLoadingSlide {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    50% {
+        transform: translateX(30%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* PrimeNG SpeedDial Mobile Enhancements & Larger Icons */
+.p-speeddial {
+    z-index: 999;
+    pointer-events: none !important;
+}
+
+.p-speeddial .p-speeddial-button,
+.p-speeddial .p-button {
+    pointer-events: auto !important;
+    width: 3.5rem !important;
+    height: 3.5rem !important;
+    border-radius: 9999px !important;
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.6),
+        0 0 15px rgba(52, 211, 153, 0.3) !important;
+}
+
+.p-speeddial .p-speeddial-button .p-icon,
+.p-speeddial .p-speeddial-button .pi {
+    font-size: 1.4rem !important;
+}
+
+.p-speeddial .p-speeddial-action {
+    width: 3rem !important;
+    height: 3rem !important;
+    background: #1e1e24 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5) !important;
+    transition: all 0.2s ease !important;
+}
+
+.p-speeddial.p-speeddial-open .p-speeddial-list,
+.p-speeddial.p-speeddial-open .p-speeddial-action,
+.p-speeddial.p-speeddial-open .p-speeddial-item {
+    pointer-events: auto !important;
+}
+
+.p-speeddial:not(.p-speeddial-open) .p-speeddial-list,
+.p-speeddial:not(.p-speeddial-open) .p-speeddial-action,
+.p-speeddial:not(.p-speeddial-open) .p-speeddial-item,
+.p-speeddial:not(.p-speeddial-open) .p-speeddial-mask {
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
+
+.p-speeddial .p-speeddial-action:hover {
+    background: #272730 !important;
+    transform: scale(1.08) !important;
+}
+
+.p-speeddial .p-speeddial-action .pi {
+    font-size: 1.25rem !important;
+}
+
+/* Audio Visualizer Wave Bars */
+@keyframes waveBar {
+
+    0%,
+    100% {
+        height: 6px;
+    }
+
+    50% {
+        height: 22px;
+    }
+}
+
+.audio-bar-1 {
+    animation: waveBar 1.1s ease-in-out infinite 0.1s;
+}
+
+.audio-bar-2 {
+    animation: waveBar 0.9s ease-in-out infinite 0.3s;
+}
+
+.audio-bar-3 {
+    animation: waveBar 1.3s ease-in-out infinite 0.2s;
+}
+
+.audio-bar-4 {
+    animation: waveBar 0.8s ease-in-out infinite 0.4s;
+}
+
+.audio-bar-5 {
+    animation: waveBar 1.2s ease-in-out infinite 0.15s;
+}
+
+/* YouTube IFrame Sizing & Stretch */
+#youtube-player,
+#youtube-player iframe,
+iframe#youtube-player,
+#solo-youtube-player,
+#solo-youtube-player iframe,
+iframe#solo-youtube-player {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border: 0 !important;
+    pointer-events: auto !important;
+}
+
+.font-caveat {
+    font-family: 'Caveat', cursive;
+    font-weight: 600;
+}
+
+/* Sleek Draw & Erase Wave Animation */
+.draw-erase-wave {
+    stroke-dasharray: 2400;
+    stroke-dashoffset: 2400;
+    animation: drawAndErase 6.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.8)) drop-shadow(0 0 24px rgba(16, 185, 129, 0.45));
+    transition:
+        opacity 0.7s ease,
+        filter 0.7s ease;
+}
+
+.draw-erase-wave-secondary {
+    stroke-dasharray: 2400;
+    stroke-dashoffset: 2400;
+    animation: drawAndErase 6.5s cubic-bezier(0.4, 0, 0.2, 1) infinite 0.4s;
+    filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.3));
+    transition:
+        opacity 0.7s ease,
+        filter 0.7s ease;
+}
+
+.soundwave-running .draw-erase-wave,
+.soundwave-running .draw-erase-wave-secondary {
+    animation-play-state: running;
+}
+
+.soundwave-paused .draw-erase-wave {
+    animation-play-state: paused;
+    opacity: 0.15;
+    filter: drop-shadow(0 0 2px rgba(52, 211, 153, 0.15));
+}
+
+.soundwave-paused .draw-erase-wave-secondary {
+    animation-play-state: paused;
+    opacity: 0.05;
+    filter: none;
+}
+
+@keyframes drawAndEraiser {
+    0% {
+        stroke-dashoffset: 2400;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    45%,
+    55% {
+        stroke-dashoffset: 0;
+        opacity: 0.9;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        stroke-dashoffset: -2400;
+        opacity: 0;
+    }
+}
+
+/* ================= Voice Stage & Speaking Pulse Styles ================= */
+
+@keyframes speakingPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 12px rgba(52, 211, 153, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+    }
+}
+
+.speaking-active-ring {
+    animation: speakingPulse 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    border-color: var(--color-playsync-brand, #34d399) !important;
+}
+
+/* Screen Stage Theater Transition */
+.stage-viewport-transition {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ================= PlaySync Glassmorphism Reusable Classes (Neutral Dark Obsidian) ================= */
+.glass-container {
+    background-color: rgba(20, 20, 24, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+.glass-card {
+    background-color: rgba(24, 24, 28, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-card-hover {
+    transition: all 0.2s ease;
+}
+
+.glass-card-hover:hover {
+    background-color: rgba(35, 35, 42, 0.8);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}

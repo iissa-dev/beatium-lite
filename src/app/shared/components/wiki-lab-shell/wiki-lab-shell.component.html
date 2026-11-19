@@ -1,0 +1,165 @@
+<div class="w-full flex flex-col gap-6 font-['Inter',sans-serif]">
+
+  <!-- 1. TOP SECTION: Header & Telemetry Bar -->
+  <header class="glass-container rounded-2xl p-5 sm:p-6 border border-playsync-border flex flex-col gap-5">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex flex-col gap-1">
+        <div class="flex items-center gap-2.5">
+          <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight font-headline">
+            {{ title() }}
+          </h1>
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        </div>
+        @if (subtitle()) {
+          <p class="text-xs text-zinc-400">
+            {{ subtitle() }}
+          </p>
+        }
+      </div>
+    </div>
+
+    <!-- Projected Metrics Bar (Top Horizontal Row) -->
+    <ng-content select="[telemetry]"></ng-content>
+  </header>
+
+  <!-- 2. MAIN WORKSPACE: 2-COLUMN SPLIT (60% Sandbox / 40% Data Inspector) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+
+    <!-- LEFT: Interactive Sandbox (60% width = 7 of 12 cols) -->
+    <section class="lg:col-span-7 glass-card rounded-2xl p-5 sm:p-6 border border-playsync-border flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b border-white/5 pb-3">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+          </svg>
+          <h2 class="text-xs font-bold text-white uppercase tracking-wider">
+            Interactive Sandbox
+          </h2>
+        </div>
+      </div>
+
+      <!-- Projected Sandbox Playground -->
+      <div class="flex flex-col gap-4 flex-1">
+        <ng-content select="[sandbox]"></ng-content>
+      </div>
+    </section>
+
+    <!-- RIGHT: Live Data Inspector (40% width = 5 of 12 cols) -->
+    <section
+      class="lg:col-span-5 glass-card rounded-2xl p-5 sm:p-6 border transition-all duration-300 flex flex-col gap-4"
+      [class.border-emerald-400]="isMutating()"
+      [class.border-playsync-border]="!isMutating()"
+      [class.shadow-[0_0_25px_rgba(52,211,153,0.25)]]="isMutating()"
+    >
+      <!-- Inspector Header & Tab Switcher -->
+      <div class="flex items-center justify-between border-b border-white/5 pb-3 gap-2">
+        <div class="flex items-center gap-1.5">
+          <span
+            class="w-2 h-2 rounded-full transition-colors duration-300"
+            [class.bg-emerald-400]="isMutating()"
+            [class.bg-zinc-500]="!isMutating()"
+            [class.animate-ping]="isMutating()"
+          ></span>
+          <h2 class="text-xs font-bold text-white uppercase tracking-wider">
+            Data Inspector
+          </h2>
+        </div>
+
+        <div class="flex items-center gap-1 bg-playsync-surface border border-playsync-border rounded-lg p-0.5">
+          <!-- Tab 1: JSON State -->
+          <button
+            type="button"
+            (click)="setInspectorTab('json')"
+            class="px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer"
+            [class.bg-white]="activeInspectorTab() === 'json'"
+            [class.text-zinc-950]="activeInspectorTab() === 'json'"
+            [class.font-semibold]="activeInspectorTab() === 'json'"
+            [class.text-zinc-400]="activeInspectorTab() !== 'json'"
+            [class.hover:text-white]="activeInspectorTab() !== 'json'"
+          >
+            JSON Payload
+          </button>
+
+          <!-- Tab 2: Raw / Stream / SVG / Stats -->
+          <button
+            type="button"
+            (click)="setInspectorTab('raw')"
+            class="px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer"
+            [class.bg-white]="activeInspectorTab() === 'raw'"
+            [class.text-zinc-950]="activeInspectorTab() === 'raw'"
+            [class.font-semibold]="activeInspectorTab() === 'raw'"
+            [class.text-zinc-400]="activeInspectorTab() !== 'raw'"
+            [class.hover:text-white]="activeInspectorTab() !== 'raw'"
+          >
+            {{ rawLabel() }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Sub-header: Live Status & Copy Button -->
+      <div class="flex items-center justify-between text-[11px] text-zinc-400">
+        <div class="flex items-center gap-1.5">
+          <span class="font-mono text-zinc-500">Live State Stream</span>
+          @if (isMutating()) {
+            <span class="text-[9px] font-bold text-emerald-400 font-mono tracking-wider animate-pulse">
+              MUTATING
+            </span>
+          }
+        </div>
+
+        <button
+          type="button"
+          (click)="copyPayload()"
+          class="flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 transition-colors cursor-pointer text-[10px]"
+          [title]="'Copy ' + activeInspectorTab() + ' to clipboard'"
+        >
+          @if (isCopied()) {
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+            <span class="text-emerald-400 font-medium">Copied!</span>
+          } @else {
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+            </svg>
+            <span>Copy</span>
+          }
+        </button>
+      </div>
+
+      <!-- Code Inspector Viewer with Generous Height -->
+      <div class="relative flex-1 min-h-[460px] bg-[#09090b] rounded-xl border border-white/5 overflow-hidden flex flex-col shadow-inner">
+        @if (activeInspectorTab() === 'json') {
+          <pre
+            class="p-4 text-[11px] font-mono text-emerald-300 leading-relaxed overflow-auto flex-1 select-all"
+          ><code>{{ formattedJson() }}</code></pre>
+        } @else {
+          <pre
+            class="p-4 text-[11px] font-mono text-cyan-300 leading-relaxed overflow-auto flex-1 select-all whitespace-pre-wrap"
+          ><code>{{ rawText() }}</code></pre>
+        }
+      </div>
+    </section>
+  </div>
+
+  <!-- 3. BOTTOM SECTION: ACADEMIC REFERENCE (WIKI) - Clean 2x2 Grid -->
+  <section class="glass-card rounded-2xl p-5 sm:p-6 border border-playsync-border flex flex-col gap-4">
+    <div class="flex items-center justify-between border-b border-white/5 pb-3">
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+        </svg>
+        <h2 class="text-xs font-bold text-white uppercase tracking-wider">
+          Academic Reference & Lecture Notes
+        </h2>
+      </div>
+      <span class="text-[10px] font-mono text-zinc-500">Course Syllabus Cross-Reference</span>
+    </div>
+
+    <!-- Projected 2x2 Clean Grid of Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <ng-content select="[wiki]"></ng-content>
+    </div>
+  </section>
+
+</div>

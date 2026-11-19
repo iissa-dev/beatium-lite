@@ -1,0 +1,270 @@
+<app-wiki-lab-shell
+  title="Voice & DSP Audio Lab"
+  academicBadge="Lecture 2A & 2B - Slides 5–30, 57–67 (Sampling, Quantization & DSP)"
+  subtitle="Interactive examination of continuous-to-discrete ADC conversion, neural denoising, and procedural synthesis"
+  [dataPayload]="inspectorPayload()"
+  [rawPayload]="rawInspectorText()"
+  [rawLabel]="activeSection() === 'mic' ? 'PCM Buffer' : 'Synthesis Formula'"
+>
+  <!-- TOP TELEMETRY BAR -->
+  <div telemetry class="w-full">
+    <app-telemetry-bar [metrics]="telemetryMetrics()"></app-telemetry-bar>
+  </div>
+
+  <!-- MAIN WORKSPACE: INTERACTIVE SANDBOX -->
+  <div sandbox class="space-y-4">
+    <!-- Clean Segmented Tab Toggle -->
+    <div class="flex items-center gap-1.5 p-1 bg-playsync-surface rounded-xl border border-playsync-border">
+      <button
+        type="button"
+        (click)="setSection('mic')"
+        class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
+        [class.bg-white]="activeSection() === 'mic'"
+        [class.text-zinc-950]="activeSection() === 'mic'"
+        [class.shadow-md]="activeSection() === 'mic'"
+        [class.text-zinc-400]="activeSection() !== 'mic'"
+        [class.hover:text-white]="activeSection() !== 'mic'"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+        </svg>
+        <span>Tab 1: Live Mic & RNNoise DSP</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="setSection('notifications')"
+        class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
+        [class.bg-white]="activeSection() === 'notifications'"
+        [class.text-zinc-950]="activeSection() === 'notifications'"
+        [class.shadow-md]="activeSection() === 'notifications'"
+        [class.text-zinc-400]="activeSection() !== 'notifications'"
+        [class.hover:text-white]="activeSection() !== 'notifications'"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+        </svg>
+        <span>Tab 2: Zero-Asset Tone Synthesizer (Hz)</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: LIVE MIC & RNNOISE DSP -->
+    @if (activeSection() === 'mic') {
+      <div class="space-y-4">
+        <!-- Oscilloscope Waveform (Single Row of 8 PCM Samples included inside) -->
+        <app-waveform-visualizer
+          [dataSource]="getAudioWaveform"
+          [isActive]="audioService.isRunning()"
+          [height]="150"
+          label="Microphone Oscilloscope Stream"
+        ></app-waveform-visualizer>
+
+        <!-- Mic Controls & RNNoise Neural Toggle -->
+        <div class="flex flex-wrap items-center gap-3 mt-5">
+          <button
+            type="button"
+            (click)="toggleMic()"
+            class="px-4 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all flex items-center gap-2 shadow-sm"
+            [class.bg-rose-500]="audioService.isRunning()"
+            [class.text-white]="audioService.isRunning()"
+            [class.bg-emerald-400]="!audioService.isRunning()"
+            [class.text-zinc-950]="!audioService.isRunning()"
+          >
+            <span>{{ audioService.isRunning() ? 'Stop Microphone' : 'Start Microphone' }}</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="toggleNoiseSuppression()"
+            class="px-4 py-2.5 rounded-xl text-xs font-medium cursor-pointer transition-all border"
+            [class.bg-emerald-500/20]="audioService.isNoiseSuppressionActive()"
+            [class.border-emerald-500/40]="audioService.isNoiseSuppressionActive()"
+            [class.text-emerald-300]="audioService.isNoiseSuppressionActive()"
+            [class.bg-white/5]="!audioService.isNoiseSuppressionActive()"
+            [class.border-white/10]="!audioService.isNoiseSuppressionActive()"
+            [class.text-zinc-400]="!audioService.isNoiseSuppressionActive()"
+          >
+            RNNoise Neural Gate: {{ audioService.isNoiseSuppressionActive() ? 'ENABLED (Denoising)' : 'BYPASS (Raw Noise)' }}
+          </button>
+        </div>
+
+        <!-- Voice Effects DSP Filter Selector -->
+        <div class="space-y-2.5 mt-5 pt-3 border-t border-white/5">
+          <span class="text-xs font-medium text-zinc-400">Mathematical Filter Nodes (DSP Biquad):</span>
+          <div class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              (click)="setEffect('normal')"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all border"
+              [class.bg-white]="audioService.currentEffect() === 'normal'"
+              [class.text-zinc-950]="audioService.currentEffect() === 'normal'"
+              [class.bg-white/5]="audioService.currentEffect() !== 'normal'"
+              [class.text-zinc-300]="audioService.currentEffect() !== 'normal'"
+              [class.border-white/10]="audioService.currentEffect() !== 'normal'"
+            >
+              Normal (All-pass)
+            </button>
+
+            <button
+              type="button"
+              (click)="setEffect('radio')"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all border"
+              [class.bg-white]="audioService.currentEffect() === 'radio'"
+              [class.text-zinc-950]="audioService.currentEffect() === 'radio'"
+              [class.bg-white/5]="audioService.currentEffect() !== 'radio'"
+              [class.text-zinc-300]="audioService.currentEffect() !== 'radio'"
+              [class.border-white/10]="audioService.currentEffect() !== 'radio'"
+            >
+              Telephone / Radio (Bandpass 300–3400 Hz)
+            </button>
+
+            <button
+              type="button"
+              (click)="setEffect('robot')"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all border"
+              [class.bg-white]="audioService.currentEffect() === 'robot'"
+              [class.text-zinc-950]="audioService.currentEffect() === 'robot'"
+              [class.bg-white/5]="audioService.currentEffect() !== 'robot'"
+              [class.text-zinc-300]="audioService.currentEffect() !== 'robot'"
+              [class.border-white/10]="audioService.currentEffect() !== 'robot'"
+            >
+              Robot Voice (50 Hz Ring Modulator)
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 2: ZERO-ASSET TONE SYNTHESIZER -->
+    @if (activeSection() === 'notifications') {
+      <div class="space-y-4">
+        <div class="glass-card rounded-xl p-4 border border-white/6 flex flex-col gap-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-white font-semibold">Procedural Tone Generation (Zero Audio Assets):</span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold font-mono">
+              0 KB Assets Downloaded
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <!-- Tone 1: 440Hz Sine -->
+            <button
+              type="button"
+              (click)="triggerTone('standard-a4')"
+              class="p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between"
+              [class.bg-emerald-500/15]="activeTone().toneKey === 'standard-a4'"
+              [class.border-emerald-500/40]="activeTone().toneKey === 'standard-a4'"
+              [class.bg-white/5]="activeTone().toneKey !== 'standard-a4'"
+              [class.border-white/10]="activeTone().toneKey !== 'standard-a4'"
+            >
+              <div>
+                <div class="text-xs font-bold text-white">Standard A4 Pitch</div>
+                <div class="text-[10px] text-zinc-400 font-mono">440.00 Hz · Pure Sine Wave</div>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Play</span>
+            </button>
+
+            <!-- Tone 2: C-Major Chord -->
+            <button
+              type="button"
+              (click)="triggerTone('c-major-chord')"
+              class="p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between"
+              [class.bg-emerald-500/15]="activeTone().toneKey === 'c-major-chord'"
+              [class.border-emerald-500/40]="activeTone().toneKey === 'c-major-chord'"
+              [class.bg-white/5]="activeTone().toneKey !== 'c-major-chord'"
+              [class.border-white/10]="activeTone().toneKey !== 'c-major-chord'"
+            >
+              <div>
+                <div class="text-xs font-bold text-white">C-Major Triad</div>
+                <div class="text-[10px] text-zinc-400 font-mono">C5 (523Hz) + E5 (659Hz) + G5 (784Hz)</div>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Play</span>
+            </button>
+
+            <!-- Tone 3: Meeting Chime -->
+            <button
+              type="button"
+              (click)="triggerTone('presentation-chime')"
+              class="p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between"
+              [class.bg-emerald-500/15]="activeTone().toneKey === 'presentation-chime'"
+              [class.border-emerald-500/40]="activeTone().toneKey === 'presentation-chime'"
+              [class.bg-white/5]="activeTone().toneKey !== 'presentation-chime'"
+              [class.border-white/10]="activeTone().toneKey !== 'presentation-chime'"
+            >
+              <div>
+                <div class="text-xs font-bold text-white">Meeting Chime</div>
+                <div class="text-[10px] text-zinc-400 font-mono">587Hz (D5) ➔ 880Hz (A5) Decaying Envelope</div>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Play</span>
+            </button>
+
+            <!-- Tone 4: Sawtooth Alert -->
+            <button
+              type="button"
+              (click)="triggerTone('low-alert')"
+              class="p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between"
+              [class.bg-emerald-500/15]="activeTone().toneKey === 'low-alert'"
+              [class.border-emerald-500/40]="activeTone().toneKey === 'low-alert'"
+              [class.bg-white/5]="activeTone().toneKey !== 'low-alert'"
+              [class.border-white/10]="activeTone().toneKey !== 'low-alert'"
+            >
+              <div>
+                <div class="text-xs font-bold text-white">Low Sawtooth Alert</div>
+                <div class="text-[10px] text-zinc-400 font-mono">220.00 Hz · Rich Odd/Even Harmonics</div>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Play</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- BOTTOM ACADEMIC REFERENCE (WIKI) - 2x2 Grid -->
+  <div wiki class="contents">
+    <!-- Card 1 -->
+    <div class="p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-1.5">
+        <h3 class="text-white font-semibold text-xs">Analogue to Digital Conversion (ADC)</h3>
+        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20">L2A Slides 5–6</span>
+      </div>
+      <p class="text-zinc-400 text-xs leading-relaxed">
+        Physical sound is continuous air pressure variation translated by a microphone into continuous voltage. The ADC converts this analogue wave into discrete numerical samples (<code class="text-emerald-400">Float32Array</code>).
+      </p>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-1.5">
+        <h3 class="text-white font-semibold text-xs">Sampling & Quantization (PCM)</h3>
+        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">L2A Slides 19–27</span>
+      </div>
+      <p class="text-zinc-400 text-xs leading-relaxed">
+        <strong>Sampling:</strong> Signal is measured 48,000 times per second (<span class="text-emerald-400 font-mono">48 kHz</span>).<br>
+        <strong>Quantization:</strong> Continuous amplitudes rounded to discrete 32-bit float levels between <span class="text-white font-mono">-1.0 and +1.0</span>.
+      </p>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-1.5">
+        <h3 class="text-white font-semibold text-xs">Nyquist Rate & Aliasing Prevention</h3>
+        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/20">L2A Slides 29–30</span>
+      </div>
+      <p class="text-zinc-400 text-xs leading-relaxed">
+        Nyquist theorem requires sampling at least double the signal bandwidth (<span class="text-amber-300 font-mono">fs ≥ 2B</span>). Undersampling folds frequencies over, creating severe audible distortion (<span class="text-rose-400">Aliasing</span>).
+      </p>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-1.5">
+        <h3 class="text-white font-semibold text-xs">Zero-Asset Mathematical Audio</h3>
+        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">L2B Slides 58, 67</span>
+      </div>
+      <p class="text-zinc-400 text-xs leading-relaxed">
+        Digital audio is purely mathematical numbers. Instead of downloading heavy MP3/WAV files, procedural audio generates waveforms on-the-fly via formulas like <span class="text-amber-300 font-mono">sin(2πft)</span> with <span class="text-emerald-400 font-bold">0 KB</span> network payload.
+      </p>
+    </div>
+  </div>
+</app-wiki-lab-shell>

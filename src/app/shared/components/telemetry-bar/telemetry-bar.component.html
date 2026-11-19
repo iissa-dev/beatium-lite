@@ -1,0 +1,47 @@
+<div class="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 font-['Inter',sans-serif]">
+  @for (metric of metrics(); track metric.label) {
+    <div
+      class="glass-card rounded-xl p-3 border border-white/6 flex flex-col justify-between gap-1.5 transition-all duration-200 hover:border-white/15"
+    >
+      <!-- Top Row: Metric Label & Optional Badge Dot -->
+      <div class="flex items-center justify-between gap-1.5">
+        <span class="text-[11px] font-medium text-playsync-muted leading-tight">
+          {{ metric.label }}
+        </span>
+
+        <!-- Colored Dot Indicator -->
+        <span
+          class="w-1.5 h-1.5 rounded-full shrink-0"
+          [class.bg-emerald-400]="metric.badgeColor === 'mint'"
+          [class.shadow-[0_0_8px_rgba(52,211,153,0.6)]]="metric.badgeColor === 'mint'"
+          [class.bg-sky-400]="metric.badgeColor === 'cyan'"
+          [class.shadow-[0_0_8px_rgba(56,189,248,0.6)]]="metric.badgeColor === 'cyan'"
+          [class.bg-amber-400]="metric.badgeColor === 'amber'"
+          [class.shadow-[0_0_8px_rgba(251,191,36,0.6)]]="metric.badgeColor === 'amber'"
+          [class.bg-rose-400]="metric.badgeColor === 'rose'"
+          [class.shadow-[0_0_8px_rgba(244,63,94,0.6)]]="metric.badgeColor === 'rose'"
+          [class.bg-zinc-600]="!metric.badgeColor || metric.badgeColor === 'default'"
+        ></span>
+      </div>
+
+      <!-- Bottom Row: Numeric Value & Unit -->
+      <div class="flex items-baseline gap-1 font-mono">
+        <span class="text-sm sm:text-base font-bold text-white tracking-tight leading-none">
+          {{ metric.value }}
+        </span>
+        @if (metric.unit) {
+          <span class="text-[10px] text-zinc-500 font-normal select-none">
+            {{ metric.unit }}
+          </span>
+        }
+      </div>
+
+      <!-- Optional Micro Description -->
+      @if (metric.description) {
+        <span class="text-[9px] text-zinc-500 leading-tight">
+          {{ metric.description }}
+        </span>
+      }
+    </div>
+  }
+</div>

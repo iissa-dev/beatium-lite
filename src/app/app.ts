@@ -1,12 +1,14 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { LoadingService } from './core/services/loading.service';
+import { ScreenShareService } from './core/services/screen-share.service';
 
 @Component({
-  imports: [RouterOutlet],
   selector: 'app-root',
-  styleUrl: './app.css',
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.html',
 })
-export class App {
-  protected readonly title = signal('beatium-lite');
+export class AppComponent {
+  readonly loadingService = inject(LoadingService);
+  readonly screenService = inject(ScreenShareService);
 }
