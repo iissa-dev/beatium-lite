@@ -210,8 +210,11 @@ export class WebRtcLoopbackService {
             }
           });
         }
-      } catch {
-        // Stats query ignored during shutdown
+      } catch (err: unknown) {
+        // Stats query failure safely caught if connection closed during tick
+        if (this.pcSender) {
+          console.debug('WebRTC stats poll error:', err);
+        }
       }
     }, 1000);
   }

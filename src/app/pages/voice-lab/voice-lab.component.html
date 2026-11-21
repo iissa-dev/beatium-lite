@@ -1,10 +1,12 @@
 <app-wiki-lab-shell
+  #labShell
   title="Voice & DSP Audio Lab"
-  academicBadge="Lecture 2A & 2B - Slides 5–30, 57–67 (Sampling, Quantization & DSP)"
-  subtitle="Interactive examination of continuous-to-discrete ADC conversion, neural denoising, and procedural synthesis"
+  academicBadge="Lecture 2A & 2B (Sampling, Quantization & DSP)"
+  subtitle="ADC Sampling, RNNoise Neural Denoising & Procedural Synthesis"
   [dataPayload]="inspectorPayload()"
   [rawPayload]="rawInspectorText()"
   [rawLabel]="activeSection() === 'mic' ? 'PCM Buffer' : 'Synthesis Formula'"
+  [showShellInspectorButton]="false"
 >
   <!-- TOP TELEMETRY BAR -->
   <div telemetry class="w-full">
@@ -13,84 +15,274 @@
 
   <!-- MAIN WORKSPACE: INTERACTIVE SANDBOX -->
   <div sandbox class="space-y-4">
-    <!-- Clean Segmented Tab Toggle -->
-    <div class="flex items-center gap-1.5 p-1 bg-playsync-surface rounded-xl border border-playsync-border">
-      <button
-        type="button"
-        (click)="setSection('mic')"
-        class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
-        [class.bg-white]="activeSection() === 'mic'"
-        [class.text-zinc-950]="activeSection() === 'mic'"
-        [class.shadow-md]="activeSection() === 'mic'"
-        [class.text-zinc-400]="activeSection() !== 'mic'"
-        [class.hover:text-white]="activeSection() !== 'mic'"
-      >
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
-        </svg>
-        <span>Tab 1: Live Mic & RNNoise DSP</span>
-      </button>
+    <!-- Clean Segmented Tab Toggle + Single Data Inspector Button (عند التابات مش خارجها) -->
+    <div class="flex flex-wrap sm:flex-nowrap items-center gap-2">
+      <div class="flex-1 flex items-center gap-1.5 p-1 bg-playsync-surface rounded-xl border border-playsync-border">
+        <button
+          type="button"
+          (click)="setSection('mic')"
+          class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
+          [class.bg-white]="activeSection() === 'mic'"
+          [class.text-zinc-950]="activeSection() === 'mic'"
+          [class.shadow-md]="activeSection() === 'mic'"
+          [class.text-zinc-400]="activeSection() !== 'mic'"
+          [class.hover:text-white]="activeSection() !== 'mic'"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+          </svg>
+          <span>Tab 1: Mic & RNNoise Recording</span>
+        </button>
 
+        <button
+          type="button"
+          (click)="setSection('notifications')"
+          class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
+          [class.bg-white]="activeSection() === 'notifications'"
+          [class.text-zinc-950]="activeSection() === 'notifications'"
+          [class.shadow-md]="activeSection() === 'notifications'"
+          [class.text-zinc-400]="activeSection() !== 'notifications'"
+          [class.hover:text-white]="activeSection() !== 'notifications'"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+          </svg>
+          <span>Tab 2: Zero-Asset Tone Synthesizer (Hz)</span>
+        </button>
+      </div>
+
+      <!-- Single Button: Data Inspector (يفتح Dialog الفحص) -->
       <button
         type="button"
-        (click)="setSection('notifications')"
-        class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
-        [class.bg-white]="activeSection() === 'notifications'"
-        [class.text-zinc-950]="activeSection() === 'notifications'"
-        [class.shadow-md]="activeSection() === 'notifications'"
-        [class.text-zinc-400]="activeSection() !== 'notifications'"
-        [class.hover:text-white]="activeSection() !== 'notifications'"
+        (click)="labShell.openInspector()"
+        class="py-2 px-3.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 bg-playsync-surface hover:bg-white/10 text-zinc-200 hover:text-white border border-playsync-border hover:border-emerald-500/40 shadow-sm whitespace-nowrap active:scale-95"
       >
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
         </svg>
-        <span>Tab 2: Zero-Asset Tone Synthesizer (Hz)</span>
+        <span>Data Inspector</span>
       </button>
     </div>
 
-    <!-- TAB 1: LIVE MIC & RNNOISE DSP -->
+    <!-- TAB 1: MIC & RNNOISE RECORDING WORKBENCH -->
     @if (activeSection() === 'mic') {
       <div class="space-y-4">
-        <!-- Oscilloscope Waveform (Single Row of 8 PCM Samples included inside) -->
-        <app-waveform-visualizer
-          [dataSource]="getAudioWaveform"
-          [isActive]="audioService.isRunning()"
-          [height]="150"
-          label="Microphone Oscilloscope Stream"
-        ></app-waveform-visualizer>
+        <!-- STATE A: DEFAULT LIVE MICROPHONE STREAM (WHEN NO RECORDING SAVED) -->
+        @if (!hasRecording()) {
+          <div class="space-y-3">
+            <app-waveform-visualizer
+              [dataSource]="getAudioWaveform"
+              [isActive]="audioService.isRunning() || isRecording()"
+              [height]="140"
+              label="Live Microphone Oscilloscope Stream"
+            ></app-waveform-visualizer>
 
-        <!-- Mic Controls & RNNoise Neural Toggle -->
-        <div class="flex flex-wrap items-center gap-3 mt-5">
-          <button
-            type="button"
-            (click)="toggleMic()"
-            class="px-4 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all flex items-center gap-2 shadow-sm"
-            [class.bg-rose-500]="audioService.isRunning()"
-            [class.text-white]="audioService.isRunning()"
-            [class.bg-emerald-400]="!audioService.isRunning()"
-            [class.text-zinc-950]="!audioService.isRunning()"
-          >
-            <span>{{ audioService.isRunning() ? 'Stop Microphone' : 'Start Microphone' }}</span>
-          </button>
+            <!-- Record Controls -->
+            <div class="flex flex-wrap items-center gap-3">
+              @if (!isRecording()) {
+                <button
+                  type="button"
+                  (click)="startRecording()"
+                  class="px-4 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all flex items-center gap-2 bg-rose-500 hover:bg-rose-400 text-white shadow-lg shadow-rose-500/20"
+                >
+                  <span class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
+                  <span>Record Audio Clip</span>
+                </button>
 
-          <button
-            type="button"
-            (click)="toggleNoiseSuppression()"
-            class="px-4 py-2.5 rounded-xl text-xs font-medium cursor-pointer transition-all border"
-            [class.bg-emerald-500/20]="audioService.isNoiseSuppressionActive()"
-            [class.border-emerald-500/40]="audioService.isNoiseSuppressionActive()"
-            [class.text-emerald-300]="audioService.isNoiseSuppressionActive()"
-            [class.bg-white/5]="!audioService.isNoiseSuppressionActive()"
-            [class.border-white/10]="!audioService.isNoiseSuppressionActive()"
-            [class.text-zinc-400]="!audioService.isNoiseSuppressionActive()"
-          >
-            RNNoise Neural Gate: {{ audioService.isNoiseSuppressionActive() ? 'ENABLED (Denoising)' : 'BYPASS (Raw Noise)' }}
-          </button>
-        </div>
+                <!-- Load Sample Template Button -->
+                <button
+                  type="button"
+                  (click)="loadSampleTemplate()"
+                  class="px-3.5 py-2.5 rounded-xl text-xs font-medium cursor-pointer transition-all bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 shadow-sm"
+                  title="Load ElevenLabs voice template"
+                >
+                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75z" />
+                  </svg>
+                  <span>Load Sample Preset</span>
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  (click)="stopRecording()"
+                  class="px-4 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all flex items-center gap-2 bg-white text-zinc-950 shadow-lg animate-pulse"
+                >
+                  <span class="w-2.5 h-2.5 rounded-sm bg-rose-600"></span>
+                  <span>Stop & Save Recording</span>
+                </button>
+              }
 
-        <!-- Voice Effects DSP Filter Selector -->
-        <div class="space-y-2.5 mt-5 pt-3 border-t border-white/5">
-          <span class="text-xs font-medium text-zinc-400">Mathematical Filter Nodes (DSP Biquad):</span>
+              <!-- RNNoise Neural Gate Toggle -->
+              <button
+                type="button"
+                (click)="toggleNoiseSuppression()"
+                class="px-3.5 py-2.5 rounded-xl text-xs font-medium cursor-pointer transition-all border"
+                [class.bg-emerald-500/20]="audioService.isNoiseSuppressionActive()"
+                [class.border-emerald-500/40]="audioService.isNoiseSuppressionActive()"
+                [class.text-emerald-300]="audioService.isNoiseSuppressionActive()"
+                [class.bg-white/5]="!audioService.isNoiseSuppressionActive()"
+                [class.border-white/10]="!audioService.isNoiseSuppressionActive()"
+                [class.text-zinc-400]="!audioService.isNoiseSuppressionActive()"
+              >
+                RNNoise: {{ audioService.isNoiseSuppressionActive() ? 'ENABLED (Denoising)' : 'BYPASS (Raw Noise)' }}
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- STATE B: RECORDED AUDIO WORKBENCH (DUAL STATIC WAVEFORMS + PLAYHEAD NEEDLE) -->
+        @if (hasRecording()) {
+          <div class="space-y-3">
+            <!-- Dual Waveform Container with Moving Playhead Needle -->
+            <div class="relative rounded-xl border border-white/10 bg-zinc-950/80 p-3.5 space-y-3 overflow-hidden select-none">
+              <!-- Moving Playhead Cursor (Needle) -->
+              <div
+                class="absolute top-0 bottom-0 w-0.5 bg-white z-20 pointer-events-none transition-all duration-75 shadow-[0_0_10px_rgba(255,255,255,0.9)]"
+                [style.left.%]="playbackProgress()"
+              >
+                <div class="absolute -top-1 -translate-x-1/2 bg-white text-zinc-950 font-mono text-[9px] px-1 py-0.2 rounded font-bold shadow">
+                  {{ formatTime(playbackTime()) }}
+                </div>
+              </div>
+
+              <!-- Top Waveform: Before (Raw Noisy) -->
+              <div class="space-y-1">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="text-rose-400 font-medium flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                    Raw Recording (Noisy Input)
+                  </span>
+                  <span class="text-zinc-400 font-mono text-[10px]">Unfiltered Amplitude</span>
+                </div>
+                <div class="h-14 w-full bg-rose-500/5 rounded-lg border border-rose-500/15 px-2 flex items-center">
+                  <svg class="w-full h-11" preserveAspectRatio="none" viewBox="0 0 120 40">
+                    @for (peak of rawWaveformPeaks(); track $index) {
+                      <line
+                        [attr.x1]="$index"
+                        [attr.y1]="20 - peak * 18"
+                        [attr.x2]="$index"
+                        [attr.y2]="20 + peak * 18"
+                        stroke="#fb7185"
+                        stroke-width="0.75"
+                        stroke-linecap="round"
+                        opacity="0.85"
+                      />
+                    }
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Bottom Waveform: After (RNNoise Denoised) -->
+              <div class="space-y-1">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="text-emerald-400 font-medium flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Denoised Signal (RNNoise Active)
+                  </span>
+                  <span class="text-zinc-400 font-mono text-[10px]">Neural Suppressed</span>
+                </div>
+                <div class="h-14 w-full bg-emerald-500/5 rounded-lg border border-emerald-500/15 px-2 flex items-center">
+                  <svg class="w-full h-11" preserveAspectRatio="none" viewBox="0 0 120 40">
+                    @for (peak of denoisedWaveformPeaks(); track $index) {
+                      <line
+                        [attr.x1]="$index"
+                        [attr.y1]="20 - peak * 18"
+                        [attr.x2]="$index"
+                        [attr.y2]="20 + peak * 18"
+                        stroke="#34d399"
+                        stroke-width="0.75"
+                        stroke-linecap="round"
+                        opacity="0.95"
+                      />
+                    }
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recorded Audio Controls Bar -->
+            <div class="flex flex-wrap items-center gap-2.5">
+              <!-- Play / Pause Button -->
+              <button
+                type="button"
+                (click)="togglePlayback()"
+                class="px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all flex items-center gap-2"
+                [class.bg-emerald-400]="!isPlaying()"
+                [class.text-zinc-950]="!isPlaying()"
+                [class.hover:bg-emerald-300]="!isPlaying()"
+                [class.bg-amber-400]="isPlaying()"
+                [class.text-zinc-950]="isPlaying()"
+              >
+                @if (isPlaying()) {
+                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                  </svg>
+                  <span>Pause Clip</span>
+                } @else {
+                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                  <span>Play Clip</span>
+                }
+              </button>
+
+              <!-- Duration & Time Indicator -->
+              <div class="font-mono text-xs text-zinc-300 px-3 py-2 rounded-xl bg-white/5 border border-white/10 flex items-center gap-1.5">
+                <span class="text-emerald-400">{{ formatTime(playbackTime()) }}</span>
+                <span class="text-zinc-500">/</span>
+                <span>{{ formatTime(recordedDuration()) }}</span>
+              </div>
+
+              <!-- Retake / New Recording -->
+              <button
+                type="button"
+                (click)="clearRecording()"
+                class="px-3.5 py-2 rounded-xl text-xs font-medium cursor-pointer transition-all bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 flex items-center gap-1.5"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                <span>New Recording</span>
+              </button>
+
+              <!-- Load Preset Template -->
+              <button
+                type="button"
+                (click)="loadSampleTemplate()"
+                class="px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-all bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 flex items-center gap-1.5"
+                title="Load ElevenLabs sample voice preset"
+              >
+                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75z" />
+                </svg>
+                <span>Sample Preset</span>
+              </button>
+
+              <!-- RNNoise Neural Toggle in Playback -->
+              <button
+                type="button"
+                (click)="toggleNoiseSuppression()"
+                class="px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-all border"
+                [class.bg-emerald-500/20]="audioService.isNoiseSuppressionActive()"
+                [class.border-emerald-500/40]="audioService.isNoiseSuppressionActive()"
+                [class.text-emerald-300]="audioService.isNoiseSuppressionActive()"
+                [class.bg-white/5]="!audioService.isNoiseSuppressionActive()"
+                [class.border-white/10]="!audioService.isNoiseSuppressionActive()"
+                [class.text-zinc-400]="!audioService.isNoiseSuppressionActive()"
+              >
+                RNNoise: {{ audioService.isNoiseSuppressionActive() ? 'ENABLED' : 'BYPASS' }}
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Voice Effects DSP Filter Selector (Active for both Live & Playback) -->
+        <div class="space-y-2 pt-2 border-t border-white/5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-medium text-zinc-400">DSP Filter Nodes (Biquad):</span>
+            <span class="text-[10px] text-zinc-500 font-mono">Applies in real-time</span>
+          </div>
           <div class="flex flex-wrap gap-2">
             <button
               type="button"
@@ -102,7 +294,7 @@
               [class.text-zinc-300]="audioService.currentEffect() !== 'normal'"
               [class.border-white/10]="audioService.currentEffect() !== 'normal'"
             >
-              Normal (All-pass)
+              Normal (Pass-through)
             </button>
 
             <button
@@ -115,7 +307,7 @@
               [class.text-zinc-300]="audioService.currentEffect() !== 'radio'"
               [class.border-white/10]="audioService.currentEffect() !== 'radio'"
             >
-              Telephone / Radio (Bandpass 300–3400 Hz)
+              Telephone / Radio (300–3400 Hz)
             </button>
 
             <button
@@ -128,142 +320,536 @@
               [class.text-zinc-300]="audioService.currentEffect() !== 'robot'"
               [class.border-white/10]="audioService.currentEffect() !== 'robot'"
             >
-              Robot Voice (50 Hz Ring Modulator)
+              Robot Voice (50 Hz Ring Mod)
             </button>
           </div>
         </div>
       </div>
     }
 
-    <!-- TAB 2: ZERO-ASSET TONE SYNTHESIZER -->
+    <!-- TAB 2: PROCEDURAL NOTIFICATION SOUND DESIGNER -->
     @if (activeSection() === 'notifications') {
-      <div class="space-y-4">
-        <div class="glass-card rounded-xl p-4 border border-white/6 flex flex-col gap-3">
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-white font-semibold">Procedural Tone Generation (Zero Audio Assets):</span>
+      <div class="space-y-3.5">
+        <div class="glass-card rounded-2xl p-4 border border-white/10 bg-zinc-950/80 space-y-4">
+          <!-- Header Bar: Title + Badge -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span class="text-xs font-semibold text-white">Procedural Notification Sound Designer</span>
+            </div>
             <span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold font-mono">
-              0 KB Assets Downloaded
+              0 KB Assets
             </span>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <!-- Tone 1: 440Hz Sine -->
+          <!-- 1. Waveform Shape (4 Segments) -->
+          <div class="space-y-1.5">
+            <span class="text-[11px] font-medium text-zinc-400">1. Waveform Geometry (Periodic Function)</span>
+            <div class="grid grid-cols-4 gap-1.5 p-1 bg-black/40 rounded-xl border border-white/5">
+              <button
+                type="button"
+                (click)="setCustomWaveform('sine')"
+                class="py-2 px-2 rounded-lg text-xs font-medium cursor-pointer transition-all flex flex-col items-center gap-1"
+                [class.bg-white]="customWaveform() === 'sine'"
+                [class.text-zinc-950]="customWaveform() === 'sine'"
+                [class.shadow-md]="customWaveform() === 'sine'"
+                [class.text-zinc-400]="customWaveform() !== 'sine'"
+                [class.hover:text-white]="customWaveform() !== 'sine'"
+              >
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 12c3-8 5-8 8 0s5 8 8 0 3-8 4-8" />
+                </svg>
+                <span class="text-[11px] font-semibold">Sine</span>
+              </button>
+
+              <button
+                type="button"
+                (click)="setCustomWaveform('triangle')"
+                class="py-2 px-2 rounded-lg text-xs font-medium cursor-pointer transition-all flex flex-col items-center gap-1"
+                [class.bg-white]="customWaveform() === 'triangle'"
+                [class.text-zinc-950]="customWaveform() === 'triangle'"
+                [class.shadow-md]="customWaveform() === 'triangle'"
+                [class.text-zinc-400]="customWaveform() !== 'triangle'"
+                [class.hover:text-white]="customWaveform() !== 'triangle'"
+              >
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 18L8 6l8 12 4-8" />
+                </svg>
+                <span class="text-[11px] font-semibold">Triangle</span>
+              </button>
+
+              <button
+                type="button"
+                (click)="setCustomWaveform('square')"
+                class="py-2 px-2 rounded-lg text-xs font-medium cursor-pointer transition-all flex flex-col items-center gap-1"
+                [class.bg-white]="customWaveform() === 'square'"
+                [class.text-zinc-950]="customWaveform() === 'square'"
+                [class.shadow-md]="customWaveform() === 'square'"
+                [class.text-zinc-400]="customWaveform() !== 'square'"
+                [class.hover:text-white]="customWaveform() !== 'square'"
+              >
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 18h4V6h8v12h4V6h4" />
+                </svg>
+                <span class="text-[11px] font-semibold">Square</span>
+              </button>
+
+              <button
+                type="button"
+                (click)="setCustomWaveform('sawtooth')"
+                class="py-2 px-2 rounded-lg text-xs font-medium cursor-pointer transition-all flex flex-col items-center gap-1"
+                [class.bg-white]="customWaveform() === 'sawtooth'"
+                [class.text-zinc-950]="customWaveform() === 'sawtooth'"
+                [class.shadow-md]="customWaveform() === 'sawtooth'"
+                [class.text-zinc-400]="customWaveform() !== 'sawtooth'"
+                [class.hover:text-white]="customWaveform() !== 'sawtooth'"
+              >
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 18L10 6v12L18 6v12l4-6" />
+                </svg>
+                <span class="text-[11px] font-semibold">Sawtooth</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Interactive Oscilloscope Screen (Drag / Scrub to Pitch) -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-[11px]">
+              <div class="flex items-center gap-1.5 text-zinc-400 font-medium">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>2. Interactive Waveform Screen (Drag horizontally to scrub pitch)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 text-xs">
+                  {{ customFrequency() }} Hz
+                </span>
+                <span class="text-[10px] text-zinc-400 font-mono uppercase bg-white/5 px-1.5 py-0.5 rounded border border-white/10">
+                  {{ customWaveform() }}
+                </span>
+              </div>
+            </div>
+
+            <div
+              #waveScreen
+              (pointerdown)="onWavePointerDown($event, waveScreen)"
+              (pointermove)="onWavePointerMove($event, waveScreen)"
+              (pointerup)="onWavePointerUp()"
+              (pointerleave)="onWavePointerUp()"
+              class="relative h-44 sm:h-48 rounded-xl bg-black/80 border border-emerald-500/25 overflow-hidden cursor-ew-resize select-none touch-none shadow-inner flex flex-col justify-between p-3"
+            >
+              <!-- Background Grid Pattern -->
+              <div class="absolute inset-0 pointer-events-none opacity-20">
+                <svg class="w-full h-full" width="100%" height="100%">
+                  <defs>
+                    <pattern id="grid-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
+                      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" stroke-width="0.5" class="text-emerald-500" />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+                </svg>
+              </div>
+
+              <!-- Zero-Crossing Axis -->
+              <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1px] bg-emerald-500/20 pointer-events-none border-b border-dashed border-emerald-500/30"></div>
+
+              <!-- Active Frequency Scrub Line (Vertical Indicator) -->
+              <div
+                class="absolute top-0 bottom-0 w-[2px] bg-gradient-to-b from-emerald-400/80 via-emerald-400 to-emerald-400/80 pointer-events-none shadow-[0_0_12px_rgba(52,211,153,0.8)]"
+                [style.left.%]="((customFrequency() - 200) / 1000) * 100"
+              >
+                <div class="absolute -top-1 -translate-x-1/2 w-2 h-2 rounded-full bg-emerald-300 ring-2 ring-emerald-500/50"></div>
+                <div class="absolute -bottom-1 -translate-x-1/2 w-2 h-2 rounded-full bg-emerald-300 ring-2 ring-emerald-500/50"></div>
+              </div>
+
+              <!-- Animated Playhead Glow (when playing) -->
+              @if (isPlayingNotification()) {
+                <div class="absolute inset-0 bg-emerald-500/10 pointer-events-none animate-pulse"></div>
+              }
+
+              <!-- Main Waveform SVG Curve -->
+              <div class="relative w-full h-full flex items-center justify-center">
+                <svg
+                  viewBox="0 0 400 120"
+                  preserveAspectRatio="none"
+                  class="w-full h-full pointer-events-none overflow-visible"
+                >
+                  <defs>
+                    <filter id="wave-glow" x="-10%" y="-20%" width="120%" height="140%">
+                      <feGaussianBlur stdDeviation="2.5" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+
+                  <path
+                    [attr.d]="waveSvgPath()"
+                    fill="none"
+                    stroke="rgba(52, 211, 153, 0.95)"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    filter="url(#wave-glow)"
+                    [class.stroke-emerald-300]="isPlayingNotification()"
+                  />
+                </svg>
+              </div>
+
+              <!-- Top Screen Live Formula Overlay -->
+              <div class="absolute top-2.5 right-3 pointer-events-none">
+                <span class="font-mono text-[11px] text-emerald-400/90 bg-zinc-950/85 px-2 py-0.5 rounded border border-emerald-500/25 shadow-sm backdrop-blur-sm">
+                  {{ customMathFormula() }}
+                </span>
+              </div>
+
+              <!-- Bottom Scale Markers & Drag Prompt -->
+              <div class="absolute bottom-1.5 inset-x-3 flex items-center justify-between text-[10px] font-mono text-zinc-500 pointer-events-none">
+                <span>200 Hz</span>
+                <span class="text-zinc-400 flex items-center gap-1 text-[9px] uppercase tracking-wider font-sans">
+                  <svg class="w-3 h-3 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M7 16l-4-4m0 0l4-4m-4 4h18m-4 4l4-4m0 0l-4-4" />
+                  </svg>
+                  Drag horizontally to scrub pitch
+                </span>
+                <span>1200 Hz</span>
+              </div>
+            </div>
+
+            <!-- Fine-Tune Slider & Quick Presets -->
+            <div class="flex items-center gap-2 pt-1">
+              <input
+                type="range"
+                min="200"
+                max="1200"
+                step="10"
+                [value]="customFrequency()"
+                (input)="onFrequencyChange($event)"
+                class="flex-1 accent-emerald-400 h-1.5 bg-zinc-800 rounded-lg cursor-pointer"
+              />
+              <div class="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  (click)="setCustomFrequency(260)"
+                  class="px-2 py-0.5 rounded text-[10px] font-mono border cursor-pointer transition-all"
+                  [class.bg-emerald-500/20]="customFrequency() === 260"
+                  [class.border-emerald-500/40]="customFrequency() === 260"
+                  [class.text-emerald-300]="customFrequency() === 260"
+                  [class.bg-white/5]="customFrequency() !== 260"
+                  [class.border-white/10]="customFrequency() !== 260"
+                  [class.text-zinc-400]="customFrequency() !== 260"
+                >
+                  260 Hz
+                </button>
+                <button
+                  type="button"
+                  (click)="setCustomFrequency(520)"
+                  class="px-2 py-0.5 rounded text-[10px] font-mono border cursor-pointer transition-all"
+                  [class.bg-emerald-500/20]="customFrequency() === 520"
+                  [class.border-emerald-500/40]="customFrequency() === 520"
+                  [class.text-emerald-300]="customFrequency() === 520"
+                  [class.bg-white/5]="customFrequency() !== 520"
+                  [class.border-white/10]="customFrequency() !== 520"
+                  [class.text-zinc-400]="customFrequency() !== 520"
+                >
+                  520 Hz
+                </button>
+                <button
+                  type="button"
+                  (click)="setCustomFrequency(880)"
+                  class="px-2 py-0.5 rounded text-[10px] font-mono border cursor-pointer transition-all"
+                  [class.bg-emerald-500/20]="customFrequency() === 880"
+                  [class.border-emerald-500/40]="customFrequency() === 880"
+                  [class.text-emerald-300]="customFrequency() === 880"
+                  [class.bg-white/5]="customFrequency() !== 880"
+                  [class.border-white/10]="customFrequency() !== 880"
+                  [class.text-zinc-400]="customFrequency() !== 880"
+                >
+                  880 Hz
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Pattern / Style with Visual Step Bars -->
+          <div class="space-y-1.5">
+            <span class="text-[11px] font-medium text-zinc-400">3. Notification Pattern (Harmonic Motion)</span>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button
+                type="button"
+                (click)="setCustomPattern('single')"
+                class="p-2.5 rounded-xl border text-left cursor-pointer transition-all flex items-center justify-between"
+                [class.bg-emerald-500/15]="customPattern() === 'single'"
+                [class.border-emerald-500/40]="customPattern() === 'single'"
+                [class.bg-white/5]="customPattern() !== 'single'"
+                [class.border-white/10]="customPattern() !== 'single'"
+              >
+                <div>
+                  <div class="text-xs font-semibold" [class.text-emerald-300]="customPattern() === 'single'" [class.text-zinc-200]="customPattern() !== 'single'">Single Ping</div>
+                  <div class="text-[10px] text-zinc-400 font-mono">1 Tone</div>
+                </div>
+                <!-- 1 step bar -->
+                <div class="flex items-end gap-1 h-6 pr-1">
+                  <div
+                    class="w-2 h-5 rounded-sm transition-all"
+                    [class.bg-emerald-400]="customPattern() === 'single'"
+                    [class.bg-zinc-600]="customPattern() !== 'single'"
+                    [class.animate-pulse]="customPattern() === 'single' && isPlayingNotification()"
+                  ></div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                (click)="setCustomPattern('chime')"
+                class="p-2.5 rounded-xl border text-left cursor-pointer transition-all flex items-center justify-between"
+                [class.bg-emerald-500/15]="customPattern() === 'chime'"
+                [class.border-emerald-500/40]="customPattern() === 'chime'"
+                [class.bg-white/5]="customPattern() !== 'chime'"
+                [class.border-white/10]="customPattern() !== 'chime'"
+              >
+                <div>
+                  <div class="text-xs font-semibold" [class.text-emerald-300]="customPattern() === 'chime'" [class.text-zinc-200]="customPattern() !== 'chime'">Two-Tone Chime</div>
+                  <div class="text-[10px] text-zinc-400 font-mono">2 Tones · Rising</div>
+                </div>
+                <!-- 2 rising bars -->
+                <div class="flex items-end gap-1 h-6 pr-1">
+                  <div
+                    class="w-2 h-3 rounded-sm transition-all"
+                    [class.bg-emerald-400]="customPattern() === 'chime'"
+                    [class.bg-zinc-600]="customPattern() !== 'chime'"
+                    [class.animate-pulse]="customPattern() === 'chime' && isPlayingNotification()"
+                  ></div>
+                  <div
+                    class="w-2 h-5 rounded-sm transition-all"
+                    [class.bg-emerald-400]="customPattern() === 'chime'"
+                    [class.bg-zinc-600]="customPattern() !== 'chime'"
+                    [class.animate-pulse]="customPattern() === 'chime' && isPlayingNotification()"
+                  ></div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                (click)="setCustomPattern('triad')"
+                class="p-2.5 rounded-xl border text-left cursor-pointer transition-all flex items-center justify-between"
+                [class.bg-emerald-500/15]="customPattern() === 'triad'"
+                [class.border-emerald-500/40]="customPattern() === 'triad'"
+                [class.bg-white/5]="customPattern() !== 'triad'"
+                [class.border-white/10]="customPattern() !== 'triad'"
+              >
+                <div>
+                  <div class="text-xs font-semibold" [class.text-emerald-300]="customPattern() === 'triad'" [class.text-zinc-200]="customPattern() !== 'triad'">Major Triad</div>
+                  <div class="text-[10px] text-zinc-400 font-mono">3 Tones · Chord</div>
+                </div>
+                <!-- 3 ascending bars -->
+                <div class="flex items-end gap-1 h-6 pr-1">
+                  <div
+                    class="w-1.5 h-2.5 rounded-sm transition-all"
+                    [class.bg-emerald-400]="customPattern() === 'triad'"
+                    [class.bg-zinc-600]="customPattern() !== 'triad'"
+                    [class.animate-pulse]="customPattern() === 'triad' && isPlayingNotification()"
+                  ></div>
+                  <div
+                    class="w-1.5 h-4 rounded-sm transition-all"
+                    [class.bg-emerald-400]="customPattern() === 'triad'"
+                    [class.bg-zinc-600]="customPattern() !== 'triad'"
+                    [class.animate-pulse]="customPattern() === 'triad' && isPlayingNotification()"
+                  ></div>
+                  <div
+                    class="w-1.5 h-6 rounded-sm transition-all"
+                    [class.bg-emerald-400]="customPattern() === 'triad'"
+                    [class.bg-zinc-600]="customPattern() !== 'triad'"
+                    [class.animate-pulse]="customPattern() === 'triad' && isPlayingNotification()"
+                  ></div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                (click)="setCustomPattern('double')"
+                class="p-2.5 rounded-xl border text-left cursor-pointer transition-all flex items-center justify-between"
+                [class.bg-emerald-500/15]="customPattern() === 'double'"
+                [class.border-emerald-500/40]="customPattern() === 'double'"
+                [class.bg-white/5]="customPattern() !== 'double'"
+                [class.border-white/10]="customPattern() !== 'double'"
+              >
+                <div>
+                  <div class="text-xs font-semibold" [class.text-emerald-300]="customPattern() === 'double'" [class.text-zinc-200]="customPattern() !== 'double'">Double Pulse</div>
+                  <div class="text-[10px] text-zinc-400 font-mono">2 Taps · Alert</div>
+                </div>
+                <!-- 2 equal pulse bars -->
+                <div class="flex items-end gap-1 h-6 pr-1">
+                  <div
+                    class="w-2 h-4 rounded-sm transition-all"
+                    [class.bg-emerald-400]="customPattern() === 'double'"
+                    [class.bg-zinc-600]="customPattern() !== 'double'"
+                    [class.animate-pulse]="customPattern() === 'double' && isPlayingNotification()"
+                  ></div>
+                  <div
+                    class="w-2 h-4 rounded-sm transition-all"
+                    [class.bg-emerald-400]="customPattern() === 'double'"
+                    [class.bg-zinc-600]="customPattern() !== 'double'"
+                    [class.animate-pulse]="customPattern() === 'double' && isPlayingNotification()"
+                  ></div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4. Duration / Decay Envelope (ADSR) with Mini SVG Curve -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="font-medium text-zinc-400">4. Decay Duration (ADSR Envelope)</span>
+              <span class="font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 text-[10px]">
+                {{ customDecay() }}s · e^(-t/τ)
+              </span>
+            </div>
+            <div class="flex items-center gap-3 bg-black/40 p-2 rounded-xl border border-white/5">
+              <!-- Mini ADSR Oscilloscope Curve -->
+              <div class="w-20 h-10 bg-zinc-950/80 rounded-lg border border-emerald-500/20 flex items-center justify-center p-1 relative overflow-hidden flex-shrink-0">
+                <svg viewBox="0 0 100 40" class="w-full h-full overflow-visible">
+                  <path [attr.d]="decaySvgPath()" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" />
+                </svg>
+                @if (isPlayingNotification()) {
+                  <div class="absolute inset-0 bg-emerald-500/15 pointer-events-none animate-pulse"></div>
+                }
+              </div>
+
+              <!-- Duration Selector Buttons -->
+              <div class="grid grid-cols-3 gap-2 flex-1">
+                <button
+                  type="button"
+                  (click)="setCustomDecay(0.2)"
+                  class="py-1.5 px-3 rounded-xl border text-xs font-medium cursor-pointer transition-all text-center"
+                  [class.bg-white]="customDecay() === 0.2"
+                  [class.text-zinc-950]="customDecay() === 0.2"
+                  [class.font-semibold]="customDecay() === 0.2"
+                  [class.bg-white/5]="customDecay() !== 0.2"
+                  [class.border-white/10]="customDecay() !== 0.2"
+                  [class.text-zinc-400]="customDecay() !== 0.2"
+                >
+                  Quick (0.2s)
+                </button>
+                <button
+                  type="button"
+                  (click)="setCustomDecay(0.5)"
+                  class="py-1.5 px-3 rounded-xl border text-xs font-medium cursor-pointer transition-all text-center"
+                  [class.bg-white]="customDecay() === 0.5"
+                  [class.text-zinc-950]="customDecay() === 0.5"
+                  [class.font-semibold]="customDecay() === 0.5"
+                  [class.bg-white/5]="customDecay() !== 0.5"
+                  [class.border-white/10]="customDecay() !== 0.5"
+                  [class.text-zinc-400]="customDecay() !== 0.5"
+                >
+                  Standard (0.5s)
+                </button>
+                <button
+                  type="button"
+                  (click)="setCustomDecay(1.0)"
+                  class="py-1.5 px-3 rounded-xl border text-xs font-medium cursor-pointer transition-all text-center"
+                  [class.bg-white]="customDecay() === 1.0"
+                  [class.text-zinc-950]="customDecay() === 1.0"
+                  [class.font-semibold]="customDecay() === 1.0"
+                  [class.bg-white/5]="customDecay() !== 1.0"
+                  [class.border-white/10]="customDecay() !== 1.0"
+                  [class.text-zinc-400]="customDecay() !== 1.0"
+                >
+                  Long Ring (1.0s)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Big Action Button: Play / Test Sound + Quick Presets -->
+          <div class="pt-2 border-t border-white/5 flex flex-wrap items-center justify-between gap-3">
             <button
               type="button"
-              (click)="triggerTone('standard-a4')"
-              class="p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between"
-              [class.bg-emerald-500/15]="activeTone().toneKey === 'standard-a4'"
-              [class.border-emerald-500/40]="activeTone().toneKey === 'standard-a4'"
-              [class.bg-white/5]="activeTone().toneKey !== 'standard-a4'"
-              [class.border-white/10]="activeTone().toneKey !== 'standard-a4'"
+              (click)="playCustomNotification()"
+              class="px-5 py-3 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-2.5 bg-emerald-400 hover:bg-emerald-300 text-zinc-950 shadow-lg shadow-emerald-500/20 active:scale-95"
+              [class.ring-2]="isPlayingNotification()"
+              [class.ring-emerald-300]="isPlayingNotification()"
             >
-              <div>
-                <div class="text-xs font-bold text-white">Standard A4 Pitch</div>
-                <div class="text-[10px] text-zinc-400 font-mono">440.00 Hz · Pure Sine Wave</div>
-              </div>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Play</span>
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <span>Play Notification Sound</span>
             </button>
 
-            <!-- Tone 2: C-Major Chord -->
-            <button
-              type="button"
-              (click)="triggerTone('c-major-chord')"
-              class="p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between"
-              [class.bg-emerald-500/15]="activeTone().toneKey === 'c-major-chord'"
-              [class.border-emerald-500/40]="activeTone().toneKey === 'c-major-chord'"
-              [class.bg-white/5]="activeTone().toneKey !== 'c-major-chord'"
-              [class.border-white/10]="activeTone().toneKey !== 'c-major-chord'"
-            >
-              <div>
-                <div class="text-xs font-bold text-white">C-Major Triad</div>
-                <div class="text-[10px] text-zinc-400 font-mono">C5 (523Hz) + E5 (659Hz) + G5 (784Hz)</div>
-              </div>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Play</span>
-            </button>
-
-            <!-- Tone 3: Meeting Chime -->
-            <button
-              type="button"
-              (click)="triggerTone('presentation-chime')"
-              class="p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between"
-              [class.bg-emerald-500/15]="activeTone().toneKey === 'presentation-chime'"
-              [class.border-emerald-500/40]="activeTone().toneKey === 'presentation-chime'"
-              [class.bg-white/5]="activeTone().toneKey !== 'presentation-chime'"
-              [class.border-white/10]="activeTone().toneKey !== 'presentation-chime'"
-            >
-              <div>
-                <div class="text-xs font-bold text-white">Meeting Chime</div>
-                <div class="text-[10px] text-zinc-400 font-mono">587Hz (D5) ➔ 880Hz (A5) Decaying Envelope</div>
-              </div>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Play</span>
-            </button>
-
-            <!-- Tone 4: Sawtooth Alert -->
-            <button
-              type="button"
-              (click)="triggerTone('low-alert')"
-              class="p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between"
-              [class.bg-emerald-500/15]="activeTone().toneKey === 'low-alert'"
-              [class.border-emerald-500/40]="activeTone().toneKey === 'low-alert'"
-              [class.bg-white/5]="activeTone().toneKey !== 'low-alert'"
-              [class.border-white/10]="activeTone().toneKey !== 'low-alert'"
-            >
-              <div>
-                <div class="text-xs font-bold text-white">Low Sawtooth Alert</div>
-                <div class="text-[10px] text-zinc-400 font-mono">220.00 Hz · Rich Odd/Even Harmonics</div>
-              </div>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Play</span>
-            </button>
+            <!-- Quick Template Chips -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] text-zinc-500 font-mono">Presets:</span>
+              <button
+                type="button"
+                (click)="applyQuickPreset('slack')"
+                class="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white cursor-pointer transition-all"
+              >
+                Slack Chime
+              </button>
+              <button
+                type="button"
+                (click)="applyQuickPreset('success')"
+                class="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white cursor-pointer transition-all"
+              >
+                Success Triad
+              </button>
+              <button
+                type="button"
+                (click)="applyQuickPreset('alert')"
+                class="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white cursor-pointer transition-all"
+              >
+                Warning Alert
+              </button>
+            </div>
           </div>
         </div>
       </div>
     }
   </div>
 
-  <!-- BOTTOM ACADEMIC REFERENCE (WIKI) - 2x2 Grid -->
+  <!-- BOTTOM ACADEMIC REFERENCE (WIKI) - 2x2 Grid (Concise & Scannable) -->
   <div wiki class="contents">
     <!-- Card 1 -->
-    <div class="p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-1.5">
-        <h3 class="text-white font-semibold text-xs">Analogue to Digital Conversion (ADC)</h3>
-        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20">L2A Slides 5–6</span>
+    <div class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="text-white font-semibold text-xs">ADC Conversion</h3>
+        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20">L2A</span>
       </div>
       <p class="text-zinc-400 text-xs leading-relaxed">
-        Physical sound is continuous air pressure variation translated by a microphone into continuous voltage. The ADC converts this analogue wave into discrete numerical samples (<code class="text-emerald-400">Float32Array</code>).
+        Continuous acoustic air pressure converted into discrete numerical float samples (<code class="text-emerald-400">Float32Array</code>).
       </p>
     </div>
 
     <!-- Card 2 -->
-    <div class="p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-1.5">
-        <h3 class="text-white font-semibold text-xs">Sampling & Quantization (PCM)</h3>
-        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">L2A Slides 19–27</span>
+    <div class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="text-white font-semibold text-xs">Sampling & Quantization</h3>
+        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">48 kHz</span>
       </div>
       <p class="text-zinc-400 text-xs leading-relaxed">
-        <strong>Sampling:</strong> Signal is measured 48,000 times per second (<span class="text-emerald-400 font-mono">48 kHz</span>).<br>
-        <strong>Quantization:</strong> Continuous amplitudes rounded to discrete 32-bit float levels between <span class="text-white font-mono">-1.0 and +1.0</span>.
+        Signal measured 48,000 times/sec, amplitudes mapped to 32-bit floats between <span class="text-white font-mono">-1.0 and +1.0</span>.
       </p>
     </div>
 
     <!-- Card 3 -->
-    <div class="p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-1.5">
-        <h3 class="text-white font-semibold text-xs">Nyquist Rate & Aliasing Prevention</h3>
-        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/20">L2A Slides 29–30</span>
+    <div class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="text-white font-semibold text-xs">Nyquist-Shannon Rate</h3>
+        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/20">fs ≥ 2B</span>
       </div>
       <p class="text-zinc-400 text-xs leading-relaxed">
-        Nyquist theorem requires sampling at least double the signal bandwidth (<span class="text-amber-300 font-mono">fs ≥ 2B</span>). Undersampling folds frequencies over, creating severe audible distortion (<span class="text-rose-400">Aliasing</span>).
+        Sampling rate must double the highest frequency to prevent frequency folding (<span class="text-rose-400 font-semibold">Aliasing</span>).
       </p>
     </div>
 
     <!-- Card 4 -->
-    <div class="p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-1.5">
-        <h3 class="text-white font-semibold text-xs">Zero-Asset Mathematical Audio</h3>
-        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">L2B Slides 58, 67</span>
+    <div class="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="text-white font-semibold text-xs">Procedural Zero-Asset Synthesis</h3>
+        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">0 KB Payload</span>
       </div>
       <p class="text-zinc-400 text-xs leading-relaxed">
-        Digital audio is purely mathematical numbers. Instead of downloading heavy MP3/WAV files, procedural audio generates waveforms on-the-fly via formulas like <span class="text-amber-300 font-mono">sin(2πft)</span> with <span class="text-emerald-400 font-bold">0 KB</span> network payload.
+        Waveforms computed dynamically using <span class="text-amber-300 font-mono">sin(2πft)</span> without downloading audio files.
       </p>
     </div>
   </div>

@@ -1,12 +1,10 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { WhiteboardElement, WhiteboardTool, WhiteboardScene } from './../models/whiteboard.model';
+import { WhiteboardElement, WhiteboardTool } from './../models/whiteboard.model';
 
 @Injectable({ providedIn: 'root' })
 export class WhiteboardService {
   readonly elements = signal<WhiteboardElement[]>([]);
   readonly currentTool = signal<WhiteboardTool>('pen');
-  readonly currentColor = signal<string>('#38bdf8');
-  readonly currentStrokeWidth = signal<number>(3);
 
   readonly elementsJson = computed(() => {
     return JSON.stringify(this.elements(), null, 2);
@@ -28,7 +26,7 @@ export class WhiteboardService {
     this.elements.set([]);
   }
 
-  public exportAsSvg(width = 800, height = 500): string {
+  public exportAsSvg(width = 800, height = 480): string {
     const svgElements = this.elements().map((el: WhiteboardElement) => {
       switch (el.type) {
         case 'rectangle':

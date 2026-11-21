@@ -1,14 +1,20 @@
 import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+export interface LabMetric {
+  value: string;
+  unit?: string;
+  label: string;
+}
+
 export interface LabCard {
   lectureId: string;
   slides: string;
   title: string;
   topic: string;
-  bullets: string[];
+  previewType: 'voice' | 'image' | 'video';
+  metrics: LabMetric[];
   route: string;
-  badgeColor: string;
 }
 
 @Component({
@@ -23,39 +29,39 @@ export class HomeOverviewComponent {
       slides: 'Slides 5–30, 57–67',
       title: 'Voice Lab',
       topic: 'Audio DSP, Sampling & Quantization',
-      bullets: [
-        'ADC conversion into discrete Float32Array PCM samples (48 kHz)',
-        'Neural RNNoise noise suppression compiled to WebAssembly',
-        'Pure code procedural tone synthesis with 0 KB asset overhead',
+      previewType: 'voice',
+      metrics: [
+        { value: '48', unit: 'kHz', label: 'PCM Sampling' },
+        { value: 'WASM', label: 'Neural Denoise' },
+        { value: '0', unit: 'KB', label: 'Tone Synthesis' },
       ],
       route: '/voice',
-      badgeColor: 'emerald',
     },
     {
       lectureId: 'Lecture 2B & 2A',
       slides: 'Slides 40–52, 29–35',
       title: 'Image Lab',
       topic: 'Vector Graphics vs Raster Bitmaps',
-      bullets: [
-        'Uncompressed Bitmap memory: 800×500×4 bytes = 1.6 MB',
-        'Mathematical Bézier paths with >99.9% payload reduction (<1 KB)',
-        'Resolution independence: Infinite zoom with zero pixelation/aliasing',
+      previewType: 'image',
+      metrics: [
+        { value: '< 1', unit: 'KB', label: 'Bézier Vector' },
+        { value: '1.6', unit: 'MB', label: 'Raw Bitmap' },
+        { value: '99.9%', label: 'Saved Size' },
       ],
       route: '/image',
-      badgeColor: 'cyan',
     },
     {
       lectureId: 'Lecture 2B & 2A',
       slides: 'Slides 53–56, 29',
       title: 'Videos Lab',
       topic: 'Frame Rates & Persistence of Vision',
-      bullets: [
-        'Retinal response retention buffer (1/16s to 1/10s duration)',
-        'Fusion Frequency (40+ FPS) vs 5 FPS motion jerkiness / flicker',
-        'In-memory RTCPeerConnection loopback with live VP8/H.264 bitrate stats',
+      previewType: 'video',
+      metrics: [
+        { value: '60', unit: 'FPS', label: 'Fluid Motion' },
+        { value: '5', unit: 'FPS', label: 'Flicker Stutter' },
+        { value: 'P2P', label: 'WebRTC Stream' },
       ],
       route: '/videos',
-      badgeColor: 'purple',
     },
   ]);
 }

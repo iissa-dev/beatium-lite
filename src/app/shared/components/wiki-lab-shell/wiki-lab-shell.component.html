@@ -1,6 +1,6 @@
 <div class="w-full flex flex-col gap-6 font-['Inter',sans-serif]">
 
-  <!-- 1. TOP SECTION: Header & Telemetry Bar -->
+  <!-- 1. TOP SECTION: Header & Telemetry Bar (Clean Titles & Telemetry) -->
   <header class="glass-container rounded-2xl p-5 sm:p-6 border border-playsync-border flex flex-col gap-5">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div class="flex flex-col gap-1">
@@ -22,11 +22,9 @@
     <ng-content select="[telemetry]"></ng-content>
   </header>
 
-  <!-- 2. MAIN WORKSPACE: 2-COLUMN SPLIT (60% Sandbox / 40% Data Inspector) -->
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-
-    <!-- LEFT: Interactive Sandbox (60% width = 7 of 12 cols) -->
-    <section class="lg:col-span-7 glass-card rounded-2xl p-5 sm:p-6 border border-playsync-border flex flex-col gap-4">
+  <!-- 2. MAIN WORKSPACE: FULL-WIDTH INTERACTIVE SANDBOX BOX -->
+  <div class="w-full">
+    <section class="w-full glass-card rounded-2xl p-5 sm:p-6 border border-playsync-border flex flex-col gap-4">
       <div class="flex items-center justify-between border-b border-white/5 pb-3">
         <div class="flex items-center gap-2">
           <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -36,6 +34,26 @@
             Interactive Sandbox
           </h2>
         </div>
+
+        <!-- Data Inspector Button INSIDE THE BOX (for Image & Video labs) -->
+        @if (showShellInspectorButton()) {
+          <button
+            type="button"
+            (click)="openInspector()"
+            class="px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer flex items-center gap-2 shadow-sm bg-white/5 hover:bg-white/10 text-zinc-200 hover:text-white border-white/10 hover:border-emerald-500/40 active:scale-95"
+          >
+            <span
+              class="w-1.5 h-1.5 rounded-full transition-colors duration-300"
+              [class.bg-emerald-400]="isMutating()"
+              [class.bg-zinc-500]="!isMutating()"
+              [class.animate-pulse]="isMutating()"
+            ></span>
+            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+            </svg>
+            <span>Data Inspector</span>
+          </button>
+        }
       </div>
 
       <!-- Projected Sandbox Playground -->
@@ -43,106 +61,143 @@
         <ng-content select="[sandbox]"></ng-content>
       </div>
     </section>
-
-    <!-- RIGHT: Live Data Inspector (40% width = 5 of 12 cols) -->
-    <section
-      class="lg:col-span-5 glass-card rounded-2xl p-5 sm:p-6 border transition-all duration-300 flex flex-col gap-4"
-      [class.border-emerald-400]="isMutating()"
-      [class.border-playsync-border]="!isMutating()"
-      [class.shadow-[0_0_25px_rgba(52,211,153,0.25)]]="isMutating()"
-    >
-      <!-- Inspector Header & Tab Switcher -->
-      <div class="flex items-center justify-between border-b border-white/5 pb-3 gap-2">
-        <div class="flex items-center gap-1.5">
-          <span
-            class="w-2 h-2 rounded-full transition-colors duration-300"
-            [class.bg-emerald-400]="isMutating()"
-            [class.bg-zinc-500]="!isMutating()"
-            [class.animate-ping]="isMutating()"
-          ></span>
-          <h2 class="text-xs font-bold text-white uppercase tracking-wider">
-            Data Inspector
-          </h2>
-        </div>
-
-        <div class="flex items-center gap-1 bg-playsync-surface border border-playsync-border rounded-lg p-0.5">
-          <!-- Tab 1: JSON State -->
-          <button
-            type="button"
-            (click)="setInspectorTab('json')"
-            class="px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer"
-            [class.bg-white]="activeInspectorTab() === 'json'"
-            [class.text-zinc-950]="activeInspectorTab() === 'json'"
-            [class.font-semibold]="activeInspectorTab() === 'json'"
-            [class.text-zinc-400]="activeInspectorTab() !== 'json'"
-            [class.hover:text-white]="activeInspectorTab() !== 'json'"
-          >
-            JSON Payload
-          </button>
-
-          <!-- Tab 2: Raw / Stream / SVG / Stats -->
-          <button
-            type="button"
-            (click)="setInspectorTab('raw')"
-            class="px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer"
-            [class.bg-white]="activeInspectorTab() === 'raw'"
-            [class.text-zinc-950]="activeInspectorTab() === 'raw'"
-            [class.font-semibold]="activeInspectorTab() === 'raw'"
-            [class.text-zinc-400]="activeInspectorTab() !== 'raw'"
-            [class.hover:text-white]="activeInspectorTab() !== 'raw'"
-          >
-            {{ rawLabel() }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Action Sub-header: Live Status & Copy Button -->
-      <div class="flex items-center justify-between text-[11px] text-zinc-400">
-        <div class="flex items-center gap-1.5">
-          <span class="font-mono text-zinc-500">Live State Stream</span>
-          @if (isMutating()) {
-            <span class="text-[9px] font-bold text-emerald-400 font-mono tracking-wider animate-pulse">
-              MUTATING
-            </span>
-          }
-        </div>
-
-        <button
-          type="button"
-          (click)="copyPayload()"
-          class="flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 transition-colors cursor-pointer text-[10px]"
-          [title]="'Copy ' + activeInspectorTab() + ' to clipboard'"
-        >
-          @if (isCopied()) {
-            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-            </svg>
-            <span class="text-emerald-400 font-medium">Copied!</span>
-          } @else {
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
-            </svg>
-            <span>Copy</span>
-          }
-        </button>
-      </div>
-
-      <!-- Code Inspector Viewer with Generous Height -->
-      <div class="relative flex-1 min-h-[460px] bg-[#09090b] rounded-xl border border-white/5 overflow-hidden flex flex-col shadow-inner">
-        @if (activeInspectorTab() === 'json') {
-          <pre
-            class="p-4 text-[11px] font-mono text-emerald-300 leading-relaxed overflow-auto flex-1 select-all"
-          ><code>{{ formattedJson() }}</code></pre>
-        } @else {
-          <pre
-            class="p-4 text-[11px] font-mono text-cyan-300 leading-relaxed overflow-auto flex-1 select-all whitespace-pre-wrap"
-          ><code>{{ rawText() }}</code></pre>
-        }
-      </div>
-    </section>
   </div>
 
-  <!-- 3. BOTTOM SECTION: ACADEMIC REFERENCE (WIKI) - Clean 2x2 Grid -->
+  <!-- 3. MODAL DIALOG: LIVE DATA INSPECTOR (CENTERED DIALOG, NOT SIDEBAR) -->
+  @if (isInspectorOpen()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+    >
+      <!-- Backdrop Overlay -->
+      <div
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+        (click)="closeInspector()"
+      ></div>
+
+      <!-- Centered Modal Dialog Window -->
+      <div
+        class="relative w-full max-w-2xl bg-zinc-950 border border-white/15 rounded-2xl shadow-2xl p-5 sm:p-6 flex flex-col gap-4 z-10 max-h-[88vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+      >
+        <!-- Dialog Header -->
+        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+          <div class="flex items-center gap-2.5">
+            <span
+              class="w-2.5 h-2.5 rounded-full transition-colors duration-300"
+              [class.bg-emerald-400]="isMutating()"
+              [class.bg-zinc-500]="!isMutating()"
+              [class.animate-ping]="isMutating()"
+            ></span>
+            <div>
+              <h2 class="text-sm font-bold text-white uppercase tracking-wider">
+                Data Inspector
+              </h2>
+              <div class="flex items-center gap-1.5 text-[10px] text-zinc-400 font-mono">
+                <span>Live State Stream</span>
+                @if (isMutating()) {
+                  <span class="text-[9px] font-bold text-emerald-400 font-mono tracking-wider animate-pulse">
+                    · MUTATING
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Close Button (X / Esc) -->
+          <button
+            type="button"
+            (click)="closeInspector()"
+            class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white border border-white/10 transition-colors cursor-pointer flex items-center gap-1.5 text-[11px]"
+            title="Close Dialog (Esc)"
+          >
+            <span class="text-[10px] font-mono text-zinc-500 hidden sm:inline">ESC</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Dialog Tabs & Copy Action -->
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1 bg-playsync-surface border border-playsync-border rounded-lg p-0.5">
+            <!-- Tab 1: JSON State -->
+            <button
+              type="button"
+              (click)="setInspectorTab('json')"
+              class="px-3 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer"
+              [class.bg-white]="activeInspectorTab() === 'json'"
+              [class.text-zinc-950]="activeInspectorTab() === 'json'"
+              [class.font-semibold]="activeInspectorTab() === 'json'"
+              [class.text-zinc-400]="activeInspectorTab() !== 'json'"
+              [class.hover:text-white]="activeInspectorTab() !== 'json'"
+            >
+              JSON Payload
+            </button>
+
+            <!-- Tab 2: Raw / Stream / SVG / Stats -->
+            <button
+              type="button"
+              (click)="setInspectorTab('raw')"
+              class="px-3 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer"
+              [class.bg-white]="activeInspectorTab() === 'raw'"
+              [class.text-zinc-950]="activeInspectorTab() === 'raw'"
+              [class.font-semibold]="activeInspectorTab() === 'raw'"
+              [class.text-zinc-400]="activeInspectorTab() !== 'raw'"
+              [class.hover:text-white]="activeInspectorTab() !== 'raw'"
+            >
+              {{ rawLabel() }}
+            </button>
+          </div>
+
+          <button
+            type="button"
+            (click)="copyPayload()"
+            class="flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 transition-colors cursor-pointer text-[10px]"
+            [title]="'Copy ' + activeInspectorTab() + ' to clipboard'"
+          >
+            @if (isCopied()) {
+              <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+              <span class="text-emerald-400 font-medium">Copied!</span>
+            } @else {
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+              </svg>
+              <span>Copy</span>
+            }
+          </button>
+        </div>
+
+        <!-- Code Inspector Viewer -->
+        <div class="relative flex-1 min-h-[260px] max-h-[50vh] bg-[#09090b] rounded-xl border border-white/5 overflow-hidden flex flex-col shadow-inner">
+          @if (activeInspectorTab() === 'json') {
+            <pre
+              class="p-4 text-[11px] font-mono text-emerald-300 leading-relaxed overflow-auto flex-1 select-all"
+            ><code>{{ formattedJson() }}</code></pre>
+          } @else {
+            <pre
+              class="p-4 text-[11px] font-mono text-cyan-300 leading-relaxed overflow-auto flex-1 select-all whitespace-pre-wrap"
+            ><code>{{ rawText() }}</code></pre>
+          }
+        </div>
+
+        <!-- Dialog Footer: Close Button -->
+        <div class="flex items-center justify-end pt-2 border-t border-white/5">
+          <button
+            type="button"
+            (click)="closeInspector()"
+            class="px-4 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all cursor-pointer"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 4. BOTTOM SECTION: ACADEMIC REFERENCE (WIKI) - Clean 2x2 Grid -->
   <section class="glass-card rounded-2xl p-5 sm:p-6 border border-playsync-border flex flex-col gap-4">
     <div class="flex items-center justify-between border-b border-white/5 pb-3">
       <div class="flex items-center gap-2">

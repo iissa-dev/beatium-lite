@@ -11,6 +11,9 @@ export type InspectorTab = 'json' | 'raw';
 @Component({
   selector: 'app-wiki-lab-shell',
   templateUrl: './wiki-lab-shell.component.html',
+  host: {
+    '(window:keydown.escape)': 'onEscape()',
+  },
 })
 export class WikiLabShellComponent {
   // المدخلات الأكاديمية (Signal Inputs)
@@ -21,6 +24,12 @@ export class WikiLabShellComponent {
   readonly dataPayload = input<unknown>(null);
   readonly rawPayload = input<string | null>(null);
   readonly rawLabel = input<string>('Raw / Stream');
+
+  // إظهار زر الفحص الافتراضي في الهيدر (مفعّل لصفحات Image و Videos)
+  readonly showShellInspectorButton = input<boolean>(true);
+
+  // حالة فتح نافذة الفحص (Drawer / Modal State)
+  readonly isInspectorOpen = signal<boolean>(false);
 
   // التبويب النشط في صندوق فحص البيانات
   readonly activeInspectorTab = signal<InspectorTab>('json');
@@ -54,6 +63,12 @@ export class WikiLabShellComponent {
     return this.formattedJson();
   });
 
+  onEscape() {
+    if (this.isInspectorOpen()) {
+      this.closeInspector();
+    }
+  }
+
   constructor() {
     // تفعيل وميض الفحص اللحظي (Pulse Highlight) عند حدوث أي Mutation للبيانات
     effect((onCleanup) => {
@@ -67,6 +82,19 @@ export class WikiLabShellComponent {
 
       onCleanup(() => clearTimeout(timeout));
     });
+  }
+
+  openInspector(tab: InspectorTab = 'json') {
+    this.activeInspectorTab.set(tab);
+    this.isInspectorOpen.set(true);
+  }
+
+  closeInspector() {
+    this.isInspectorOpen.set(false);
+  }
+
+  toggleInspector() {
+    this.isInspectorOpen.update((open) => !open);
   }
 
   setInspectorTab(tab: InspectorTab) {

@@ -11,10 +11,3 @@ export interface WhiteboardElement {
   color: string;
   strokeWidth: number;
 }
-
-export interface WhiteboardScene {
-  version: number;
-  elements: WhiteboardElement[];
-  totalBytes: number; // حجم الـ JSON بالبايت لشرح كفاءة المتجهات للدكتور
-  lastUpdatedAt: string;
-}

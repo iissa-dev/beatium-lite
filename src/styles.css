@@ -406,3 +406,103 @@ iframe#solo-youtube-player {
     border-color: rgba(255, 255, 255, 0.15);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
+
+/* ================= Overview Interactive Cards Previews ================= */
+@keyframes cardEqScale {
+    0%, 100% {
+        transform: scaleY(0.2);
+    }
+    50% {
+        transform: scaleY(0.95);
+    }
+}
+
+.card-eq-bar {
+    transform-origin: bottom;
+    animation: cardEqScale 1.2s ease-in-out infinite;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.group:hover .card-eq-bar {
+    filter: brightness(1.3) drop-shadow(0 0 4px rgba(52, 211, 153, 0.7));
+}
+
+/* Videos Lab Frame Motion Simulation */
+@keyframes moveSmoothTrack {
+    0% {
+        left: 2px;
+    }
+    100% {
+        left: calc(100% - 1.15rem);
+    }
+}
+
+@keyframes moveStutterTrack {
+    0% {
+        left: 2px;
+    }
+    100% {
+        left: calc(100% - 1.15rem);
+    }
+}
+
+.motion-smooth-dot {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    width: 0.95rem;
+    border-radius: 9999px;
+    animation: moveSmoothTrack 1.8s ease-in-out infinite alternate;
+}
+
+.motion-stutter-dot {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    width: 0.95rem;
+    border-radius: 9999px;
+    animation: moveStutterTrack 1.8s steps(5) infinite alternate;
+}
+
+/* Image Lab Bézier handles and curve */
+.bezier-handle {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), fill 0.25s ease;
+}
+
+.group:hover .bezier-handle {
+    transform: scale(1.4);
+}
+
+@keyframes bezierPulse {
+    0%, 100% {
+        opacity: 0.85;
+        stroke-width: 2px;
+    }
+    50% {
+        opacity: 1;
+        stroke-width: 2.6px;
+    }
+}
+
+.bezier-active-path {
+    animation: bezierPulse 3s ease-in-out infinite;
+}
+
+/* Respect reduced motion preference per modern-web-guidance */
+@media (prefers-reduced-motion: reduce) {
+    .card-eq-bar {
+        animation: none;
+        transform: scaleY(0.6);
+    }
+    .motion-smooth-dot,
+    .motion-stutter-dot {
+        animation: none;
+        left: 50% !important;
+    }
+    .bezier-active-path {
+        animation: none;
+        stroke-width: 2px;
+    }
+}

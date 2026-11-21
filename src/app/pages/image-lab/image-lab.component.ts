@@ -1,6 +1,7 @@
 import {
   Component,
   ElementRef,
+  afterNextRender,
   computed,
   effect,
   inject,
@@ -76,6 +77,10 @@ export class ImageLabComponent {
   });
 
   constructor() {
+    afterNextRender(() => {
+      this.redrawCanvas();
+    });
+
     // إعادة رسم اللوحة تلقائياً عند أي تعديل على مصفوفة العناصر (إضافة، تراجع، مسح)
     effect(() => {
       // تتبع عناصر السبورة
@@ -90,12 +95,10 @@ export class ImageLabComponent {
 
   setColor(color: string) {
     this.selectedColor.set(color);
-    this.whiteboard.currentColor.set(color);
   }
 
   setStrokeWidth(w: number) {
     this.selectedStrokeWidth.set(w);
-    this.whiteboard.currentStrokeWidth.set(w);
   }
 
   // --- أحداث مؤشر الماوس / اللمس على الـ Canvas ---

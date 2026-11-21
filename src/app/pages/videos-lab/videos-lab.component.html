@@ -168,7 +168,7 @@
         <!-- Profile 1: 1080p @ 60 FPS -->
         <button
           type="button"
-          (click)="applyProfile('1080p-60')"
+          (click)="setProfile('1080p-60')"
           class="p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-1"
           [class.bg-emerald-500/15]="currentProfile() === '1080p-60'"
           [class.border-emerald-500/40]="currentProfile() === '1080p-60'"
@@ -186,7 +186,7 @@
         <!-- Profile 2: 720p @ 30 FPS -->
         <button
           type="button"
-          (click)="applyProfile('720p-30')"
+          (click)="setProfile('720p-30')"
           class="p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-1"
           [class.bg-sky-500/15]="currentProfile() === '720p-30'"
           [class.border-sky-500/40]="currentProfile() === '720p-30'"
@@ -204,7 +204,7 @@
         <!-- Profile 3: 240p @ 5 FPS -->
         <button
           type="button"
-          (click)="applyProfile('240p-5')"
+          (click)="setProfile('240p-5')"
           class="p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-1"
           [class.bg-rose-500/15]="currentProfile() === '240p-5'"
           [class.border-rose-500/40]="currentProfile() === '240p-5'"

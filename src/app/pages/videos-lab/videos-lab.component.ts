@@ -170,23 +170,26 @@ export class VideosLabComponent implements OnDestroy {
   });
 
   constructor() {
-    // ربط بث الشاشة الأصلي بـ senderVideo
+    // 1. دورة حياة اتصال الـ WebRTC: تعتمد حصرياً على توفر تدفق البث stream
+    effect(() => {
+      const stream = this.screenService.screenStream();
+      if (stream) {
+        void this.loopbackService.startLoopback(stream);
+      } else {
+        this.loopbackService.stopLoopback();
+      }
+    });
+
+    // 2. ربط تدفق البث المحلي بـ senderVideo عند ظهوره أو إعادة إنشائه بالـ DOM
     effect(() => {
       const stream = this.screenService.screenStream();
       const senderEl = this.senderVideoRef()?.nativeElement;
       if (senderEl) {
         senderEl.srcObject = stream;
       }
-
-      // إذا كان هناك بث، قم بتغذية WebRTC Loopback تلقائياً
-      if (stream) {
-        this.loopbackService.startLoopback(stream);
-      } else {
-        this.loopbackService.stopLoopback();
-      }
     });
 
-    // ربط تدفق المستلم بـ receiverVideo
+    // 3. ربط تدفق المستلم بـ receiverVideo عند ظهوره أو إعادة إنشائه بالـ DOM
     effect(() => {
       const remoteStream = this.loopbackService.remoteStream();
       const receiverEl = this.receiverVideoRef()?.nativeElement;
@@ -218,10 +221,6 @@ export class VideosLabComponent implements OnDestroy {
 
   setLayout(layout: DisplayLayout): void {
     this.displayLayout.set(layout);
-  }
-
-  async applyProfile(profile: QualityProfile): Promise<void> {
-    await this.setProfile(profile);
   }
 
   async setProfile(profile: QualityProfile): Promise<void> {
